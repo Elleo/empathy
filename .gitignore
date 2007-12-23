@@ -8,7 +8,12 @@ Makefile
 *.swp
 *enum-types*
 *.pc
+*.tar.*
+*.orig
+*.rej
+*.bak
 
+ChangeLog
 stamp-h1
 xmldocs.make
 INSTALL
