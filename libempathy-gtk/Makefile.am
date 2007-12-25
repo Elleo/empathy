@@ -22,6 +22,7 @@ libempathy_gtk_la_SOURCES =             	\
 	empathy-account-widget-jabber.c		\
 	empathy-account-widget-msn.c		\
 	empathy-account-widget-salut.c		\
+	empathy-account-widget-irc.c		\
 	empathy-profile-chooser.c		\
 	empathy-cell-renderer-expander.c	\
 	empathy-cell-renderer-text.c		\
@@ -55,7 +56,10 @@ libempathy_gtk_la_SOURCES =             	\
 	empathy-avatar-chooser.c		\
 	empathy-avatar-image.c			\
 	empathy-ui-utils.c			\
-	empathy-new-message-dialog.c
+	empathy-new-message-dialog.c \
+	empathy-irc-network-manager.c		\
+	empathy-irc-network.c			\
+	empathy-irc-server.c
 
 # do not distribute generated files
 nodist_libempathy_gtk_la_SOURCES =\
@@ -79,6 +83,7 @@ libempathy_gtk_headers =			\
 	empathy-account-widget-jabber.h		\
 	empathy-account-widget-msn.h		\
 	empathy-account-widget-salut.h		\
+	empathy-account-widget-irc.h		\
 	empathy-profile-chooser.h		\
 	empathy-cell-renderer-expander.h	\
 	empathy-cell-renderer-text.h		\
@@ -112,7 +117,10 @@ libempathy_gtk_headers =			\
 	empathy-avatar-chooser.h		\
 	empathy-avatar-image.h			\
 	empathy-ui-utils.h			\
-	empathy-new-message-dialog.h
+	empathy-new-message-dialog.h		\
+	empathy-irc-network-manager.h		\
+	empathy-irc-network.h			\
+	empathy-irc-server.h
 
 libempathy_gtk_includedir = $(includedir)/libempathy-gtk/
 libempathy_gtk_include_HEADERS =		\
@@ -131,6 +139,7 @@ glade_DATA = 					\
 	empathy-account-widget-jabber.glade	\
 	empathy-account-widget-msn.glade	\
 	empathy-account-widget-salut.glade	\
+	empathy-account-widget-irc.glade	\
 	empathy-new-chatroom-dialog.glade	\
 	empathy-group-chat.glade		\
 	empathy-chatrooms-window.glade		\
