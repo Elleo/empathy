@@ -200,6 +200,40 @@ START_TEST (test_add_server)
 }
 END_TEST
 
+START_TEST (test_modified_signal_because_of_server)
+{
+  EmpathyIrcNetwork *network;
+  EmpathyIrcServer *server;
+
+  network = empathy_irc_network_new ("id1", "Network1");
+  fail_if (network == NULL);
+
+  g_signal_connect (network, "modified", G_CALLBACK (modified_cb), NULL);
+
+  server = empathy_irc_server_new ("server1", 6667, FALSE);
+  empathy_irc_network_add_server (network, server);
+
+  /* Change server properties */
+  modified = FALSE;
+  g_object_set (server, "address", "server2", NULL);
+  fail_if (!modified);
+  modified = FALSE;
+  g_object_set (server, "port", 6668, NULL);
+  fail_if (!modified);
+  modified = FALSE;
+  g_object_set (server, "ssl", TRUE, NULL);
+  fail_if (!modified);
+
+  empathy_irc_network_remove_server (network, server);
+  modified = FALSE;
+  g_object_set (server, "address", "server3", NULL);
+  /* We removed the server so the network is not modified anymore */
+  fail_if (modified);
+
+  g_object_unref (network);
+}
+END_TEST
+
 TCase *
 make_empathy_irc_network_tcase (void)
 {
@@ -208,5 +242,6 @@ make_empathy_irc_network_tcase (void)
     tcase_add_test (tc, test_property_change);
     tcase_add_test (tc, test_modified_signal);
     tcase_add_test (tc, test_add_server);
+    tcase_add_test (tc, test_modified_signal_because_of_server);
     return tc;
 }
