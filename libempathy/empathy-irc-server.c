@@ -25,8 +25,6 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 
-#include <telepathy-glib/util.h>
-
 #include "empathy-irc-server.h"
 
 G_DEFINE_TYPE (EmpathyIrcServer, empathy_irc_server, G_TYPE_OBJECT);
@@ -90,26 +88,14 @@ empathy_irc_server_set_property (GObject *object,
   switch (property_id)
     {
       case PROP_ADDRESS:
-        if (tp_strdiff (priv->address, g_value_get_string (value)))
-          {
-            g_free (priv->address);
-            priv->address = g_value_dup_string (value);
-            g_object_notify (object, "address");
-          }
+        g_free (priv->address);
+        priv->address = g_value_dup_string (value);
         break;
       case PROP_PORT:
-        if (priv->port != g_value_get_uint (value))
-          {
-            priv->port = g_value_get_uint (value);
-            g_object_notify (object, "port");
-          }
+        priv->port = g_value_get_uint (value);
         break;
       case PROP_SSL:
-        if (priv->ssl != g_value_get_boolean (value))
-          {
-            priv->ssl = g_value_get_boolean (value);
-            g_object_notify (object, "ssl");
-          }
+        priv->ssl = g_value_get_boolean (value);
         break;
       default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
