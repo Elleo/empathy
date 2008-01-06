@@ -263,6 +263,7 @@ START_TEST (test_empathy_irc_network_set_server_position)
   /* get servers list */
   servers = empathy_irc_network_get_servers (network);
   fail_if (g_slist_length (servers) != 4);
+  modified = FALSE;
 
   /* server1 go to the last position */
   empathy_irc_network_set_server_position (network, servers->data, -1);
@@ -278,6 +279,8 @@ START_TEST (test_empathy_irc_network_set_server_position)
   /* server4 go to the second position*/
   l = l->next;
   empathy_irc_network_set_server_position (network, l->data, 1);
+
+  fail_if (!modified);
 
   /* free the list */
   g_slist_foreach (servers, (GFunc) g_object_unref, NULL);

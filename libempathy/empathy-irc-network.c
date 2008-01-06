@@ -297,4 +297,6 @@ empathy_irc_network_set_server_position (EmpathyIrcNetwork *self,
 
   priv->servers = g_slist_delete_link (priv->servers, l);
   priv->servers = g_slist_insert (priv->servers, server, pos);
+
+  g_signal_emit (self, signals[MODIFIED], 0);
 }
