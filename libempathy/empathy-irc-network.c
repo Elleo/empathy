@@ -25,6 +25,9 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 
+#include <telepathy-glib/util.h>
+
+#include "empathy-marshal.h"
 #include "empathy-irc-network.h"
 
 G_DEFINE_TYPE (EmpathyIrcNetwork, empathy_irc_network, G_TYPE_OBJECT);
@@ -36,6 +39,15 @@ enum
   PROP_NAME,
   LAST_PROPERTY
 };
+
+/* signals */
+enum
+{
+  MODIFIED,
+  LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] = {0};
 
 typedef struct _EmpathyIrcNetworkPrivate EmpathyIrcNetworkPrivate;
 
@@ -88,8 +100,12 @@ empathy_irc_network_set_property (GObject *object,
         priv->id = g_value_dup_string (value);
         break;
       case PROP_NAME:
-        g_free (priv->name);
-        priv->name = g_value_dup_string (value);
+        if (tp_strdiff (priv->name, g_value_get_string (value)))
+          {
+            g_free (priv->name);
+            priv->name = g_value_dup_string (value);
+            g_signal_emit (object, signals[MODIFIED], 0);
+          }
         break;
       default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -157,6 +173,14 @@ empathy_irc_network_class_init (EmpathyIrcNetworkClass *klass)
       G_PARAM_STATIC_BLURB);
   g_object_class_install_property (object_class, PROP_NAME, param_spec);
 
+  signals[MODIFIED] = g_signal_new (
+      "modified",
+      G_OBJECT_CLASS_TYPE (object_class),
+      G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED,
+      0,
+      NULL, NULL,
+      empathy_marshal_VOID__VOID,
+      G_TYPE_NONE, 0);
 }
 
 EmpathyIrcNetwork *
@@ -192,4 +216,5 @@ empathy_irc_network_add_server (EmpathyIrcNetwork *self,
   priv = EMPATHY_IRC_NETWORK_GET_PRIVATE (self);
 
   priv->servers = g_slist_append (priv->servers, server);
+  g_signal_emit (self, signals[MODIFIED], 0);
 }
