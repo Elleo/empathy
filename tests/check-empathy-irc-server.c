@@ -65,11 +65,55 @@ START_TEST (test_property_change)
 }
 END_TEST
 
+gboolean modified = FALSE;
+
+static void
+modified_cb (EmpathyIrcServer *server,
+             gpointer unused)
+{
+  modified = TRUE;
+}
+
+START_TEST (test_modified_signal)
+{
+  EmpathyIrcServer *server;
+
+  server = empathy_irc_server_new ("test.localhost", 6667, TRUE);
+  fail_if (server == NULL);
+
+  g_signal_connect (server, "modified", G_CALLBACK (modified_cb), NULL);
+
+  /* address */
+  g_object_set (server, "address", "test2.localhost", NULL);
+  fail_if (!modified);
+  modified = FALSE;
+  g_object_set (server, "address", "test2.localhost", NULL);
+  fail_if (modified);
+
+  /* port */
+  g_object_set (server, "port", 6668, NULL);
+  fail_if (!modified);
+  modified = FALSE;
+  g_object_set (server, "port", 6668, NULL);
+  fail_if (modified);
+
+  /* ssl */
+  g_object_set (server, "ssl", FALSE, NULL);
+  fail_if (!modified);
+  modified = FALSE;
+  g_object_set (server, "ssl", FALSE, NULL);
+  fail_if (modified);
+
+  g_object_unref (server);
+}
+END_TEST
+
 TCase *
 make_empathy_irc_server_tcase (void)
 {
     TCase *tc = tcase_create ("empathy-irc-server");
     tcase_add_test (tc, test_empathy_irc_server_new);
     tcase_add_test (tc, test_property_change);
+    tcase_add_test (tc, test_modified_signal);
     return tc;
 }
