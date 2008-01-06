@@ -65,7 +65,7 @@ START_TEST (test_property_change)
 }
 END_TEST
 
-gboolean modified = FALSE;
+static gboolean modified = FALSE;
 
 static void
 modified_cb (EmpathyIrcServer *server,
