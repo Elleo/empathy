@@ -27,7 +27,8 @@ check_main_SOURCES =                             \
     check-helpers.h                              \
     check-libempathy.h                           \
     check-empathy-utils.c                        \
-    check-empathy-irc-server.c
+    check-empathy-irc-server.c                   \
+    check-empathy-irc-network.c
 
 check_main_LDADD = \
     @CHECK_LIBS@ \
