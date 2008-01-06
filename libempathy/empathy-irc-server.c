@@ -25,6 +25,9 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 
+#include <telepathy-glib/util.h>
+
+#include "empathy-marshal.h"
 #include "empathy-irc-server.h"
 
 G_DEFINE_TYPE (EmpathyIrcServer, empathy_irc_server, G_TYPE_OBJECT);
@@ -37,6 +40,15 @@ enum
   PROP_SSL,
   LAST_PROPERTY
 };
+
+/* signals */
+enum
+{
+  MODIFIED,
+  LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] = {0};
 
 typedef struct _EmpathyIrcServerPrivate EmpathyIrcServerPrivate;
 
@@ -88,14 +100,26 @@ empathy_irc_server_set_property (GObject *object,
   switch (property_id)
     {
       case PROP_ADDRESS:
-        g_free (priv->address);
-        priv->address = g_value_dup_string (value);
+        if (tp_strdiff (priv->address, g_value_get_string (value)))
+          {
+            g_free (priv->address);
+            priv->address = g_value_dup_string (value);
+            g_signal_emit (object, signals[MODIFIED], 0);
+          }
         break;
       case PROP_PORT:
-        priv->port = g_value_get_uint (value);
+        if (priv->port != g_value_get_uint (value))
+          {
+            priv->port = g_value_get_uint (value);
+            g_signal_emit (object, signals[MODIFIED], 0);
+          }
         break;
       case PROP_SSL:
-        priv->ssl = g_value_get_boolean (value);
+        if (priv->ssl != g_value_get_boolean (value))
+          {
+            priv->ssl = g_value_get_boolean (value);
+            g_signal_emit (object, signals[MODIFIED], 0);
+          }
         break;
       default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -169,6 +193,15 @@ empathy_irc_server_class_init (EmpathyIrcServerClass *klass)
       G_PARAM_STATIC_NICK |
       G_PARAM_STATIC_BLURB);
   g_object_class_install_property (object_class, PROP_SSL, param_spec);
+
+  signals[MODIFIED] = g_signal_new (
+      "modified",
+      G_OBJECT_CLASS_TYPE (object_class),
+      G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED,
+      0,
+      NULL, NULL,
+      empathy_marshal_VOID__VOID,
+      G_TYPE_NONE, 0);
 }
 
 EmpathyIrcServer *
