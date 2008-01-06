@@ -138,7 +138,7 @@ empathy_irc_network_class_init (EmpathyIrcNetworkClass *klass)
       "id",
       "Identifier",
       "The unique identifier of this network",
-      "",
+      NULL,
       G_PARAM_CONSTRUCT_ONLY |
       G_PARAM_READWRITE |
       G_PARAM_STATIC_NAME |
@@ -150,8 +150,7 @@ empathy_irc_network_class_init (EmpathyIrcNetworkClass *klass)
       "name",
       "Network name",
       "The displayed name of this network",
-      "",
-      G_PARAM_CONSTRUCT_ONLY |
+      NULL,
       G_PARAM_READWRITE |
       G_PARAM_STATIC_NAME |
       G_PARAM_STATIC_NICK |
