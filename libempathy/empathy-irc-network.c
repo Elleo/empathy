@@ -237,3 +237,24 @@ empathy_irc_network_add_server (EmpathyIrcNetwork *self,
   priv->servers = g_slist_append (priv->servers, g_object_ref (server));
   g_signal_emit (self, signals[MODIFIED], 0);
 }
+
+void
+empathy_irc_network_remove_server (EmpathyIrcNetwork *self,
+                                   EmpathyIrcServer *server)
+{
+  EmpathyIrcNetworkPrivate *priv;
+  GSList *l;
+
+  g_return_if_fail (EMPATHY_IS_IRC_NETWORK (self));
+  g_return_if_fail (server != NULL && EMPATHY_IS_IRC_SERVER (server));
+
+  priv = EMPATHY_IRC_NETWORK_GET_PRIVATE (self);
+
+  l = g_slist_find (priv->servers, server);
+  if (l == NULL)
+    return;
+
+  g_object_unref (l->data);
+  priv->servers = g_slist_delete_link (priv->servers, l);
+  g_signal_emit (self, signals[MODIFIED], 0);
+}

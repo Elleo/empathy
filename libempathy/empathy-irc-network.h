@@ -70,6 +70,9 @@ empathy_irc_network_get_servers (EmpathyIrcNetwork *network);
 void empathy_irc_network_add_server (EmpathyIrcNetwork *network,
     EmpathyIrcServer *server);
 
+void empathy_irc_network_remove_server (EmpathyIrcNetwork *network,
+    EmpathyIrcServer *server);
+
 G_END_DECLS
 
 #endif /* __EMPATHY_IRC_NETWORK_H__ */
