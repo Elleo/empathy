@@ -193,15 +193,21 @@ empathy_irc_network_new (const gchar *id,
       NULL);
 }
 
-const GSList *
+GSList *
 empathy_irc_network_get_servers (EmpathyIrcNetwork *self)
 {
   EmpathyIrcNetworkPrivate *priv;
+  GSList *servers = NULL, *l;
 
   g_return_val_if_fail (EMPATHY_IS_IRC_NETWORK (self), NULL);
   priv = EMPATHY_IRC_NETWORK_GET_PRIVATE (self);
 
-  return priv->servers;
+  for (l = priv->servers; l != NULL; l = g_slist_next (l))
+    {
+      servers = g_slist_prepend (servers, g_object_ref (l->data));
+    }
+
+  return g_slist_reverse (servers);
 }
 
 void
