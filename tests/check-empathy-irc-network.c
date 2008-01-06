@@ -117,6 +117,8 @@ START_TEST (test_add_server)
       server = empathy_irc_server_new (test_servers[i].address,
           test_servers[i].port, test_servers[i].ssl);
       empathy_irc_network_add_server (network, server);
+      fail_if (!modified);
+      modified = FALSE;
       g_object_unref (server);
     }
 
@@ -151,7 +153,9 @@ START_TEST (test_add_server)
   l = g_slist_nth (servers, 2);
   fail_if (l == NULL);
   server = l->data;
+  modified = TRUE;
   empathy_irc_network_remove_server (network, server);
+  fail_if (!modified);
 
   /* free the list */
   g_slist_foreach (servers, (GFunc) g_object_unref, NULL);
