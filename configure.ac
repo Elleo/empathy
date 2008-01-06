@@ -59,6 +59,8 @@ AM_GCONF_SOURCE_2
 GLIB_GENMARSHAL=`$PKG_CONFIG glib-2.0 --variable=glib_genmarshal`
 AC_SUBST(GLIB_GENMARSHAL)
 
+EMPATHY_ARG_VALGRIND
+
 # -----------------------------------------------------------
 # Pkg-Config dependency checks
 # -----------------------------------------------------------
@@ -213,7 +215,7 @@ AM_CONDITIONAL(HAVE_NOTHERE, test "x$have_nothere" = "xyes")
 AC_ARG_ENABLE(tests,
               AS_HELP_STRING([--enable-tests=@<:@no/yes/auto@:>@],
                              [build tests]), ,
-                             enable_tests=no)
+                             enable_tests=auto)
 
 if test "x$enable_tests" != "xno"; then
    PKG_CHECK_MODULES(CHECK,
