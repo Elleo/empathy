@@ -114,11 +114,23 @@ empathy_irc_network_set_property (GObject *object,
 }
 
 static void
+empathy_irc_network_dispose (GObject *object)
+{
+  EmpathyIrcNetwork *self = EMPATHY_IRC_NETWORK (object);
+  EmpathyIrcNetworkPrivate *priv = EMPATHY_IRC_NETWORK_GET_PRIVATE (self);
+
+  g_slist_foreach (priv->servers, (GFunc) g_object_unref, NULL);
+
+  G_OBJECT_CLASS (empathy_irc_network_parent_class)->dispose (object);
+}
+
+static void
 empathy_irc_network_finalize (GObject *object)
 {
   EmpathyIrcNetwork *self = EMPATHY_IRC_NETWORK (object);
   EmpathyIrcNetworkPrivate *priv = EMPATHY_IRC_NETWORK_GET_PRIVATE (self);
 
+  g_slist_free (priv->servers);
   g_free (priv->id);
   g_free (priv->name);
 
@@ -148,6 +160,7 @@ empathy_irc_network_class_init (EmpathyIrcNetworkClass *klass)
   g_type_class_add_private (object_class,
           sizeof (EmpathyIrcNetworkPrivate));
 
+  object_class->dispose = empathy_irc_network_dispose;
   object_class->finalize = empathy_irc_network_finalize;
 
   param_spec = g_param_spec_string (
@@ -221,6 +234,6 @@ empathy_irc_network_add_server (EmpathyIrcNetwork *self,
 
   priv = EMPATHY_IRC_NETWORK_GET_PRIVATE (self);
 
-  priv->servers = g_slist_append (priv->servers, server);
+  priv->servers = g_slist_append (priv->servers, g_object_ref (server));
   g_signal_emit (self, signals[MODIFIED], 0);
 }
