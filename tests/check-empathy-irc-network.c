@@ -14,6 +14,7 @@ START_TEST (test_empathy_irc_network_new)
   gchar *id = NULL, *name = NULL;
 
   network = empathy_irc_network_new ("id1", "Network1");
+  fail_if (network == NULL);
 
   g_object_get (network,
       "id", &id,
@@ -35,6 +36,7 @@ START_TEST (test_property_change)
   gchar *name = NULL;
 
   network = empathy_irc_network_new ("id1", "Network1");
+  fail_if (network == NULL);
 
   g_object_set (network,
       "name", "Network2",
@@ -52,11 +54,40 @@ START_TEST (test_property_change)
 }
 END_TEST
 
+static gboolean modified = TRUE;
+
+static void
+modified_cb (EmpathyIrcNetwork *network,
+             gpointer unused)
+{
+  modified = TRUE;
+}
+
+START_TEST (test_modified_signal)
+{
+  EmpathyIrcNetwork *network;
+
+  network = empathy_irc_network_new ("id1", "Network1");
+  fail_if (network == NULL);
+
+  g_signal_connect (network, "modified", G_CALLBACK (modified_cb), NULL);
+
+  g_object_set (network, "name", "Network2", NULL);
+  fail_if (!modified);
+  modified = FALSE;
+  g_object_set (network, "name", "Network2", NULL);
+  fail_if (modified);
+
+  g_object_unref (network);
+}
+END_TEST
+
 TCase *
 make_empathy_irc_network_tcase (void)
 {
     TCase *tc = tcase_create ("empathy-irc-network");
     tcase_add_test (tc, test_empathy_irc_network_new);
     tcase_add_test (tc, test_property_change);
+    tcase_add_test (tc, test_modified_signal);
     return tc;
 }
