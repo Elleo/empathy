@@ -29,10 +29,34 @@ START_TEST (test_empathy_irc_network_new)
 }
 END_TEST
 
+START_TEST (test_property_change)
+{
+  EmpathyIrcNetwork *network;
+  gchar *name = NULL;
+
+  network = empathy_irc_network_new ("id1", "Network1");
+
+  g_object_set (network,
+      "name", "Network2",
+      NULL);
+
+  g_object_get (network,
+      "name", &name,
+      NULL);
+
+  fail_if (name == NULL || strcmp (name, "Network2") != 0);
+
+  g_free (name);
+  g_object_unref (network);
+
+}
+END_TEST
+
 TCase *
 make_empathy_irc_network_tcase (void)
 {
     TCase *tc = tcase_create ("empathy-irc-network");
     tcase_add_test (tc, test_empathy_irc_network_new);
+    tcase_add_test (tc, test_property_change);
     return tc;
 }
