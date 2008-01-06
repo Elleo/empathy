@@ -176,7 +176,7 @@ empathy_irc_server_class_init (EmpathyIrcServerClass *klass)
       "port",
       "Server port",
       "The port to use to connect on this server",
-      0, G_MAXUINT16, 6667,
+      1, G_MAXUINT16, 6667,
       G_PARAM_READWRITE |
       G_PARAM_STATIC_NAME |
       G_PARAM_STATIC_NICK |
