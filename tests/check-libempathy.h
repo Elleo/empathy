@@ -2,5 +2,6 @@
 #define __CHECK_LIBEMPATHY__
 
 TCase * make_empathy_utils_tcase (void);
+TCase * make_empathy_irc_server_tcase (void);
 
 #endif /* #ifndef __CHECK_LIBEMPATHY__ */
