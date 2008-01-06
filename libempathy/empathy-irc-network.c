@@ -62,6 +62,13 @@ struct _EmpathyIrcNetworkPrivate
     ((EmpathyIrcNetworkPrivate *) obj->priv)
 
 static void
+server_modified_cb (EmpathyIrcServer *server,
+                    EmpathyIrcNetwork *self)
+{
+  g_signal_emit (self, signals[MODIFIED], 0);
+}
+
+static void
 empathy_irc_network_get_property (GObject *object,
                                   guint property_id,
                                   GValue *value,
@@ -118,8 +125,14 @@ empathy_irc_network_dispose (GObject *object)
 {
   EmpathyIrcNetwork *self = EMPATHY_IRC_NETWORK (object);
   EmpathyIrcNetworkPrivate *priv = EMPATHY_IRC_NETWORK_GET_PRIVATE (self);
+  GSList *l;
 
-  g_slist_foreach (priv->servers, (GFunc) g_object_unref, NULL);
+  for (l = priv->servers; l != NULL; l = g_slist_next (l))
+    {
+      g_signal_handlers_disconnect_by_func (l->data,
+          G_CALLBACK (server_modified_cb), self);
+      g_object_unref (l->data);
+    }
 
   G_OBJECT_CLASS (empathy_irc_network_parent_class)->dispose (object);
 }
@@ -235,6 +248,9 @@ empathy_irc_network_add_server (EmpathyIrcNetwork *self,
   priv = EMPATHY_IRC_NETWORK_GET_PRIVATE (self);
 
   priv->servers = g_slist_append (priv->servers, g_object_ref (server));
+
+  g_signal_connect (server, "modified", G_CALLBACK (server_modified_cb), self);
+
   g_signal_emit (self, signals[MODIFIED], 0);
 }
 
@@ -256,5 +272,8 @@ empathy_irc_network_remove_server (EmpathyIrcNetwork *self,
 
   g_object_unref (l->data);
   priv->servers = g_slist_delete_link (priv->servers, l);
+  g_signal_handlers_disconnect_by_func (server, G_CALLBACK (server_modified_cb),
+      self);
+
   g_signal_emit (self, signals[MODIFIED], 0);
 }
