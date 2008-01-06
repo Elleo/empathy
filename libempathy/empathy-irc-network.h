@@ -73,6 +73,9 @@ void empathy_irc_network_add_server (EmpathyIrcNetwork *network,
 void empathy_irc_network_remove_server (EmpathyIrcNetwork *network,
     EmpathyIrcServer *server);
 
+void empathy_irc_network_set_server_position (EmpathyIrcNetwork *network,
+    EmpathyIrcServer *server, gint pos);
+
 G_END_DECLS
 
 #endif /* __EMPATHY_IRC_NETWORK_H__ */
