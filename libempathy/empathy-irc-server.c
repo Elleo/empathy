@@ -156,7 +156,6 @@ empathy_irc_server_class_init (EmpathyIrcServerClass *klass)
       "Server address",
       "The address of this server",
       "",
-      G_PARAM_CONSTRUCT_ONLY |
       G_PARAM_READWRITE |
       G_PARAM_STATIC_NAME |
       G_PARAM_STATIC_NICK |
@@ -168,7 +167,6 @@ empathy_irc_server_class_init (EmpathyIrcServerClass *klass)
       "Server port",
       "The port to use to connect on this server",
       0, G_MAXUINT16, 6667,
-      G_PARAM_CONSTRUCT_ONLY |
       G_PARAM_READWRITE |
       G_PARAM_STATIC_NAME |
       G_PARAM_STATIC_NICK |
@@ -180,7 +178,6 @@ empathy_irc_server_class_init (EmpathyIrcServerClass *klass)
       "SSL",
       "If this server needs SSL connection",
       FALSE,
-      G_PARAM_CONSTRUCT_ONLY |
       G_PARAM_READWRITE |
       G_PARAM_STATIC_NAME |
       G_PARAM_STATIC_NICK |
