@@ -33,11 +33,43 @@ START_TEST (test_empathy_irc_server_new)
 }
 END_TEST
 
+START_TEST (test_property_change)
+{
+  EmpathyIrcServer *server;
+  gchar *address;
+  guint port;
+  gboolean ssl;
+
+  server = empathy_irc_server_new ("test.localhost", 6667, TRUE);
+  fail_if (server == NULL);
+
+  g_object_set (server,
+      "address", "test2.localhost",
+      "port", 6668,
+      "ssl", FALSE,
+      NULL);
+
+  g_object_get (server,
+      "address", &address,
+      "port", &port,
+      "ssl", &ssl,
+      NULL);
+
+  fail_if (address == NULL || strcmp (address, "test2.localhost") != 0);
+  fail_if (port != 6668);
+  fail_if (ssl);
+
+  g_free (address);
+  g_object_unref (server);
+
+}
+END_TEST
 
 TCase *
 make_empathy_irc_server_tcase (void)
 {
     TCase *tc = tcase_create ("empathy-irc-server");
     tcase_add_test (tc, test_empathy_irc_server_new);
+    tcase_add_test (tc, test_property_change);
     return tc;
 }
