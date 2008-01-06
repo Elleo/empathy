@@ -39,7 +39,10 @@ libempathy_la_SOURCES =					\
 	empathy-chandler.c				\
 	empathy-filter.c				\
 	empathy-idle.c					\
-	empathy-log-manager.c
+	empathy-log-manager.c				\
+	empathy-irc-network-manager.c			\
+	empathy-irc-network.c				\
+	empathy-irc-server.c
 
 # do not distribute generated files
 nodist_libempathy_la_SOURCES =\
@@ -76,6 +79,9 @@ libempathy_headers =				\
 	empathy-filter.h			\
 	empathy-idle.h				\
 	empathy-log-manager.h			\
+	empathy-irc-network-manager.h		\
+	empathy-irc-network.h			\
+	empathy-irc-server.h			\
 	tp-stream-engine-gen.h
 
 libempathy_includedir = $(includedir)/libempathy/

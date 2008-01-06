@@ -55,10 +55,7 @@ libempathy_gtk_la_SOURCES =             	\
 	empathy-avatar-chooser.c		\
 	empathy-avatar-image.c			\
 	empathy-ui-utils.c			\
-	empathy-new-message-dialog.c \
-	empathy-irc-network-manager.c		\
-	empathy-irc-network.c			\
-	empathy-irc-server.c
+	empathy-new-message-dialog.c
 
 # do not distribute generated files
 nodist_libempathy_gtk_la_SOURCES =\
@@ -115,10 +112,7 @@ libempathy_gtk_headers =			\
 	empathy-avatar-chooser.h		\
 	empathy-avatar-image.h			\
 	empathy-ui-utils.h			\
-	empathy-new-message-dialog.h		\
-	empathy-irc-network-manager.h		\
-	empathy-irc-network.h			\
-	empathy-irc-server.h
+	empathy-new-message-dialog.h
 
 libempathy_gtk_includedir = $(includedir)/libempathy-gtk/
 libempathy_gtk_include_HEADERS =		\
