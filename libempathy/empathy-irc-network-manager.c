@@ -28,8 +28,6 @@
 
 #include "empathy-irc-network-manager.h"
 
-#define IRC_NETWORKS_XML_FILENAME "irc-networks.xml"
-
 #define DEBUG_DOMAIN "IrcNetworkManager"
 
 G_DEFINE_TYPE (EmpathyIrcNetworkManager, empathy_irc_network_manager,
@@ -56,8 +54,8 @@ struct _EmpathyIrcNetworkManagerPrivate {
 #define EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE(obj)\
     ((EmpathyIrcNetworkManagerPrivate *) obj->priv)
 
-static gboolean
-irc_network_manager_get_all (EmpathyIrcNetworkManager *manager);
+static void
+irc_network_manager_load_servers (EmpathyIrcNetworkManager *manager);
 static gboolean
 irc_network_manager_file_parse (EmpathyIrcNetworkManager *manager,
     const gchar *filename);
@@ -176,7 +174,7 @@ empathy_irc_network_manager_class_init (EmpathyIrcNetworkManagerClass *klass)
       G_PARAM_STATIC_NAME |
       G_PARAM_STATIC_NICK |
       G_PARAM_STATIC_BLURB);
-  g_object_class_install_property (object_class, PROP_GLOBAL_FILE, param_spec);
+  g_object_class_install_property (object_class, PROP_USER_FILE, param_spec);
 }
 
 EmpathyIrcNetworkManager *
@@ -191,8 +189,8 @@ empathy_irc_network_manager_new (const gchar *global_file,
       NULL);
 
   /* load file */
-  // XXX move that in the constructor
-  irc_network_manager_get_all (manager);
+  /* FIXME move that to the constructor */
+  irc_network_manager_load_servers (manager);
 
   return manager;
 }
@@ -282,45 +280,30 @@ empathy_irc_network_manager_store (EmpathyIrcNetworkManager *self)
  * API to save/load and parse the irc_networks file.
  */
 
-static gboolean
-irc_network_manager_get_all (EmpathyIrcNetworkManager *self)
+static void
+load_global_file (EmpathyIrcNetworkManager *self)
 {
+  EmpathyIrcNetworkManagerPrivate *priv =
+    EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
 
-  EmpathyIrcNetworkManagerPrivate *priv;
-  gchar *dir;
-  gchar *file_with_path = NULL;
+  if (priv->global_file == NULL)
+    return;
 
-  priv = EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
-
-  if (!priv->global_file)
+  if (!g_file_test (priv->global_file, G_FILE_TEST_EXISTS))
     {
-      dir = g_build_filename (g_get_home_dir (), ".gnome2", PACKAGE_NAME,
-          NULL);
-
-      if (!g_file_test (dir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR))
-        {
-          g_mkdir_with_parents (dir, S_IRUSR | S_IWUSR | S_IXUSR);
-        }
-
-      file_with_path = g_build_filename (dir, IRC_NETWORKS_XML_FILENAME, NULL);
-      g_free (dir);
-    }
-  else
-    {
-      file_with_path = g_strdup (priv->global_file);
+      empathy_debug (DEBUG_DOMAIN, "Global networks file %s doesn't exist",
+          priv->global_file);
+      return;
     }
 
-  /* read file in */
-  if (g_file_test (file_with_path, G_FILE_TEST_EXISTS) &&
-      !irc_network_manager_file_parse (self, file_with_path))
-    {
-      g_free (file_with_path);
-      return FALSE;
-    }
+  irc_network_manager_file_parse (self, priv->global_file);
+}
 
-  g_free (file_with_path);
-
-  return TRUE;
+static void
+irc_network_manager_load_servers (EmpathyIrcNetworkManager *self)
+{
+  load_global_file (self);
+  /* TODO: load user file */
 }
 
 static void
