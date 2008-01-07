@@ -10,6 +10,8 @@ check_server (EmpathyIrcServer *server,
   guint port;
   gboolean ssl;
 
+  fail_if (server == NULL);
+
   g_object_get (server,
       "address", &address,
       "port", &port,

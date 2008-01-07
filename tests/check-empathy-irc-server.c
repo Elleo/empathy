@@ -14,8 +14,6 @@ START_TEST (test_empathy_irc_server_new)
   EmpathyIrcServer *server;
 
   server = empathy_irc_server_new ("test.localhost", 6667, TRUE);
-  fail_if (server == NULL);
-
   check_server (server, "test.localhost", 6667, TRUE);
 
   g_object_unref (server);
