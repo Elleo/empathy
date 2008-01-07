@@ -74,8 +74,7 @@ empathy_irc_network_manager_remove (EmpathyIrcNetworkManager *manager,
     EmpathyIrcNetwork *irc_network);
 
 GSList *
-empathy_irc_network_manager_get_irc_networks (
-    EmpathyIrcNetworkManager *manager);
+empathy_irc_network_manager_get_networks (EmpathyIrcNetworkManager *manager);
 
 gboolean
 empathy_irc_network_manager_store (EmpathyIrcNetworkManager *manager);

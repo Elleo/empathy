@@ -224,6 +224,8 @@ empathy_irc_network_manager_add (EmpathyIrcNetworkManager *self,
     return TRUE;
   }
   */
+  priv->irc_networks = g_slist_append (priv->irc_networks,
+      g_object_ref (irc_network));
 
   return FALSE;
 }
@@ -251,7 +253,7 @@ empathy_irc_network_manager_remove (EmpathyIrcNetworkManager *self,
 }
 
 GSList *
-empathy_irc_network_manager_get_irc_networks (EmpathyIrcNetworkManager *self)
+empathy_irc_network_manager_get_networks (EmpathyIrcNetworkManager *self)
 {
   EmpathyIrcNetworkManagerPrivate *priv;
   GSList *irc_networks;
@@ -261,7 +263,7 @@ empathy_irc_network_manager_get_irc_networks (EmpathyIrcNetworkManager *self)
   priv = EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
 
   irc_networks = g_slist_copy (priv->irc_networks);
-  g_slist_foreach (irc_networks, (GFunc)g_object_ref, NULL);
+  g_slist_foreach (irc_networks, (GFunc) g_object_ref, NULL);
 
   return irc_networks;
 }
@@ -311,57 +313,36 @@ irc_network_manager_parse_irc_server (EmpathyIrcNetwork *network,
                                       xmlNodePtr node)
 {
   xmlNodePtr server_node;
-  gchar *str;
 
   for (server_node = node->children; server_node;
       server_node = server_node->next)
     {
-      xmlNodePtr  child;
       gchar *address = NULL, *port = NULL, *ssl = NULL;
 
       if (strcmp (server_node->name, "server") != 0)
         continue;
 
-      for (child = server_node->children; child; child = child->next)
+      address = xmlGetProp (server_node, "address");
+      port = xmlGetProp (server_node, "port");
+      ssl = xmlGetProp (server_node, "ssl");
+
+      if (address != NULL)
         {
-          gchar *tag;
-          tag = (gchar *) child->name;
-          str = (gchar *) xmlNodeGetContent (child);
-
-          if (!str)
-            continue;
-
-          if (strcmp (tag, "address") == 0)
-            {
-              g_print ("server adr: %s\n", str);
-              address = str;
-            }
-
-          else if (strcmp (tag, "port") == 0)
-            {
-              g_print ("server port: %s\n", str);
-              port = str;
-            }
-
-          else if (strcmp (tag, "ssl") == 0)
-            {
-                g_print ("server ssl: %s\n", str);
-                ssl = str;
-            }
-        }
-
-      if (address != NULL && port != NULL && ssl != NULL)
-        {
-          gint port_nb;
+          gint port_nb = 0;
           gboolean have_ssl = FALSE;
           EmpathyIrcServer *server;
 
-          port_nb = strtol (str, NULL, 10);
-          if (port_nb <= 0 || port_nb > 65556)
+          if (port != NULL)
+            port_nb = strtol (port, NULL, 10);
+
+          if (port_nb <= 0 || port_nb > G_MAXUINT16)
             port_nb = 6667;
 
-          if (strcmp (ssl, "TRUE") == 0)
+          if (ssl == NULL || strcmp (ssl, "TRUE") == 0)
             have_ssl = TRUE;
+
+          empathy_debug (DEBUG_DOMAIN, "add server %s port %d ssl %d", address,
+              port_nb, have_ssl);
 
           server = empathy_irc_server_new (address, port_nb, have_ssl);
           empathy_irc_network_add_server (network, server);
@@ -378,7 +359,7 @@ irc_network_manager_parse_irc_server (EmpathyIrcNetwork *network,
 
 static void
 irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
-                                       xmlNodePtr            node)
+                                       xmlNodePtr node)
 {
   EmpathyIrcNetwork  *network;
   xmlNodePtr child;
@@ -393,8 +374,9 @@ irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
 
   id = xmlGetProp (node, "id");
   name = xmlGetProp (node, "name");
-  g_print ("id: %s name %s\n", id, name);
   network = empathy_irc_network_new (id, name);
+  empathy_debug (DEBUG_DOMAIN, "add network %s (id %s)", name, id);
+  xmlFree (name);
   xmlFree (id);
 
   for (child = node->children; child; child = child->next)
@@ -409,7 +391,6 @@ irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
 
       if (strcmp (tag, "servers") == 0)
         {
-          g_print ("servers\n");
           irc_network_manager_parse_irc_server (network, child);
         }
 
@@ -433,9 +414,7 @@ irc_network_manager_file_parse (EmpathyIrcNetworkManager *self,
 
   priv = EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
 
-  empathy_debug (DEBUG_DOMAIN,
-          "Attempting to parse file:'%s'...",
-          filename);
+  empathy_debug (DEBUG_DOMAIN, "Attempting to parse file:'%s'...", filename);
 
   ctxt = xmlNewParserCtxt ();
 
@@ -459,7 +438,6 @@ irc_network_manager_file_parse (EmpathyIrcNetworkManager *self,
 
   /* The root node, networks. */
   networks = xmlDocGetRootElement (doc);
-
 
   for (node = networks->children; node; node = node->next)
     {
