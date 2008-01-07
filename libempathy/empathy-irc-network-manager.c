@@ -38,7 +38,8 @@ G_DEFINE_TYPE (EmpathyIrcNetworkManager, empathy_irc_network_manager,
 /* properties */
 enum
 {
-  PROP_FILENAME = 1,
+  PROP_GLOBAL_FILE = 1,
+  PROP_USER_FILE,
   LAST_PROPERTY
 };
 
@@ -48,7 +49,8 @@ typedef struct _EmpathyIrcNetworkManagerPrivate
 struct _EmpathyIrcNetworkManagerPrivate {
   GSList *irc_networks;
 
-  gchar *filename;
+  gchar *global_file;
+  gchar *user_file;
 };
 
 #define EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE(obj)\
@@ -74,8 +76,11 @@ empathy_irc_network_manager_get_property (GObject *object,
 
   switch (property_id)
     {
-      case PROP_FILENAME:
-        g_value_set_string (value, priv->filename);
+      case PROP_GLOBAL_FILE:
+        g_value_set_string (value, priv->global_file);
+        break;
+      case PROP_USER_FILE:
+        g_value_set_string (value, priv->user_file);
         break;
       default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -95,9 +100,13 @@ empathy_irc_network_manager_set_property (GObject *object,
 
   switch (property_id)
     {
-      case PROP_FILENAME:
-        g_free (priv->filename);
-        priv->filename = g_value_dup_string (value);
+      case PROP_GLOBAL_FILE:
+        g_free (priv->global_file);
+        priv->global_file = g_value_dup_string (value);
+        break;
+      case PROP_USER_FILE:
+        g_free (priv->user_file);
+        priv->user_file = g_value_dup_string (value);
         break;
       default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -111,7 +120,8 @@ empathy_irc_network_manager_finalize (GObject *object)
   EmpathyIrcNetworkManagerPrivate *priv = 
     EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
 
-  g_free (priv->filename);
+  g_free (priv->global_file);
+  g_free (priv->user_file);
 
   g_slist_foreach (priv->irc_networks, (GFunc) g_object_unref, NULL);
   g_slist_free (priv->irc_networks);
@@ -143,27 +153,41 @@ empathy_irc_network_manager_class_init (EmpathyIrcNetworkManagerClass *klass)
   object_class->finalize = empathy_irc_network_manager_finalize;
 
   param_spec = g_param_spec_string (
-      "filename",
-      "Filename path",
-      "The path of the filename from which we have to load"
+      "global-file",
+      "path of the global networks file",
+      "The path of the system-wide filename from which we have to load"
       "the networks list",
-      "",
+      NULL,
       G_PARAM_CONSTRUCT_ONLY |
       G_PARAM_READWRITE |
       G_PARAM_STATIC_NAME |
       G_PARAM_STATIC_NICK |
       G_PARAM_STATIC_BLURB);
-  g_object_class_install_property (object_class, PROP_FILENAME, param_spec);
+  g_object_class_install_property (object_class, PROP_GLOBAL_FILE, param_spec);
+
+  param_spec = g_param_spec_string (
+      "user-file",
+      "path of the user networks file",
+      "The path of user's  filename from which we have to load"
+      "the networks list and to which we'll save his modifications",
+      NULL,
+      G_PARAM_CONSTRUCT_ONLY |
+      G_PARAM_READWRITE |
+      G_PARAM_STATIC_NAME |
+      G_PARAM_STATIC_NICK |
+      G_PARAM_STATIC_BLURB);
+  g_object_class_install_property (object_class, PROP_GLOBAL_FILE, param_spec);
 }
 
 EmpathyIrcNetworkManager *
-empathy_irc_network_manager_new (void)
+empathy_irc_network_manager_new (const gchar *global_file,
+                                 const gchar *user_file)
 {
-
   EmpathyIrcNetworkManager *manager;
 
   manager = g_object_new (EMPATHY_TYPE_IRC_NETWORK_MANAGER,
-      "filename", "/home/cassidy/.gnome2/Empathy/irc-networks.xml",
+      "global-file", global_file,
+      "user-file", user_file,
       NULL);
 
   /* load file */
@@ -268,7 +292,7 @@ irc_network_manager_get_all (EmpathyIrcNetworkManager *self)
 
   priv = EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
 
-  if (!priv->filename)
+  if (!priv->global_file)
     {
       dir = g_build_filename (g_get_home_dir (), ".gnome2", PACKAGE_NAME,
           NULL);
@@ -283,7 +307,7 @@ irc_network_manager_get_all (EmpathyIrcNetworkManager *self)
     }
   else
     {
-      file_with_path = g_strdup (priv->filename);
+      file_with_path = g_strdup (priv->global_file);
     }
 
   /* read file in */

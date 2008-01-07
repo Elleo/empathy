@@ -62,7 +62,8 @@ empathy_irc_network_manager_get_type (void);
                               EmpathyIrcNetworkManagerClass))
 
 EmpathyIrcNetworkManager *
-empathy_irc_network_manager_new (void);
+empathy_irc_network_manager_new (const gchar *global_file,
+    const gchar *user_file);
 
 gboolean
 empathy_irc_network_manager_add (EmpathyIrcNetworkManager *manager,
