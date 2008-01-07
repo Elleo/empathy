@@ -5,27 +5,17 @@
 #include <check.h>
 #include "check-helpers.h"
 #include "check-libempathy.h"
+#include "check-irc-helper.h"
 
 #include <libempathy/empathy-irc-network.h>
 
 START_TEST (test_empathy_irc_network_new)
 {
   EmpathyIrcNetwork *network;
-  gchar *id = NULL, *name = NULL;
 
   network = empathy_irc_network_new ("id1", "Network1");
-  fail_if (network == NULL);
+  check_network (network, "id1", "Network1", NULL, 0);
 
-  g_object_get (network,
-      "id", &id,
-      "name", &name,
-      NULL);
-
-  fail_if (id == NULL || strcmp (id, "id1") != 0);
-  fail_if (name == NULL || strcmp (name, "Network1") != 0);
-
-  g_free (id);
-  g_free (name);
   g_object_unref (network);
 }
 END_TEST
@@ -33,22 +23,16 @@ END_TEST
 START_TEST (test_property_change)
 {
   EmpathyIrcNetwork *network;
-  gchar *name = NULL;
 
   network = empathy_irc_network_new ("id1", "Network1");
-  fail_if (network == NULL);
+  check_network (network, "id1", "Network1", NULL, 0);
 
   g_object_set (network,
       "name", "Network2",
       NULL);
 
-  g_object_get (network,
-      "name", &name,
-      NULL);
+  check_network (network, "id1", "Network2", NULL, 0);
 
-  fail_if (name == NULL || strcmp (name, "Network2") != 0);
-
-  g_free (name);
   g_object_unref (network);
 
 }
@@ -68,7 +52,7 @@ START_TEST (test_modified_signal)
   EmpathyIrcNetwork *network;
 
   network = empathy_irc_network_new ("id1", "Network1");
-  fail_if (network == NULL);
+  check_network (network, "id1", "Network1", NULL, 0);
 
   modified = FALSE;
   g_signal_connect (network, "modified", G_CALLBACK (modified_cb), NULL);
@@ -83,30 +67,19 @@ START_TEST (test_modified_signal)
 }
 END_TEST
 
-struct server_t
-{
-  gchar *address;
-  guint port;
-  gboolean ssl;
-};
-
-struct server_t test_servers[] = {
-  { "server1", 6667, FALSE },
-  { "server2", 6668, TRUE },
-  { "server3", 6667, FALSE },
-  { "server4", 6669, TRUE }};
-
 static void
-add_test_servers (EmpathyIrcNetwork *network)
+add_servers (EmpathyIrcNetwork *network,
+             struct server_t *servers,
+             guint nb_servers)
 {
   guint i;
 
-  for (i = 0; i < 4; i ++)
+  for (i = 0; i < nb_servers; i ++)
     {
       EmpathyIrcServer *server;
 
-      server = empathy_irc_server_new (test_servers[i].address,
-          test_servers[i].port, test_servers[i].ssl);
+      server = empathy_irc_server_new (servers[i].address,
+          servers[i].port, servers[i].ssl);
       modified = FALSE;
       empathy_irc_network_add_server (network, server);
       fail_if (!modified);
@@ -119,48 +92,31 @@ START_TEST (test_add_server)
   EmpathyIrcNetwork *network;
   EmpathyIrcServer *server;
   GSList *servers, *l;
-  guint i;
+  struct server_t test_servers[] = {
+    { "server1", 6667, FALSE },
+    { "server2", 6668, TRUE },
+    { "server3", 6667, FALSE },
+    { "server4", 6669, TRUE }};
+  struct server_t servers_without_3[] = {
+    { "server1", 6667, FALSE },
+    { "server2", 6668, TRUE },
+    { "server4", 6669, TRUE }};
 
   network = empathy_irc_network_new ("id1", "Network1");
-  fail_if (network == NULL);
+  check_network (network, "id1", "Network1", NULL, 0);
 
   modified = FALSE;
   g_signal_connect (network, "modified", G_CALLBACK (modified_cb), NULL);
 
-  servers = empathy_irc_network_get_servers (network);
-  fail_if (servers != NULL);
+  check_network (network, "id1", "Network1", NULL, 0);
 
   /* add the servers */
-  add_test_servers (network);
+  add_servers (network, test_servers, 4);
 
-  /* get servers list */
-  servers = empathy_irc_network_get_servers (network);
-  fail_if (g_slist_length (servers) != 4);
-
-  /* Is that the right servers ? */
-  for (l = servers, i = 0; l != NULL; l = g_slist_next (l), i++)
-    {
-      gchar *address;
-      guint port;
-      gboolean ssl;
-
-      server = l->data;
-
-      g_object_get (server,
-          "address", &address,
-          "port", &port,
-          "ssl", &ssl,
-          NULL);
-
-      fail_if (address == NULL || strcmp (address, test_servers[i].address)
-          != 0);
-      fail_if (port != test_servers[i].port);
-      fail_if (ssl != test_servers[i].ssl);
-
-      g_free (address);
-    }
+  check_network (network, "id1", "Network1", test_servers, 4);
 
   /* Now let's remove the 3rd server */
+  servers = empathy_irc_network_get_servers (network);
   l = g_slist_nth (servers, 2);
   fail_if (l == NULL);
   server = l->data;
@@ -172,40 +128,8 @@ START_TEST (test_add_server)
   g_slist_foreach (servers, (GFunc) g_object_unref, NULL);
   g_slist_free (servers);
 
-  /* Request the new servers list */
-  servers = empathy_irc_network_get_servers (network);
-  fail_if (g_slist_length (servers) != 3);
-
   /* The 3rd server should have disappear */
-  for (l = servers, i = 0; l != NULL; l = g_slist_next (l), i++)
-    {
-      gchar *address;
-      guint port;
-      gboolean ssl;
-
-      server = l->data;
-
-      g_object_get (server,
-          "address", &address,
-          "port", &port,
-          "ssl", &ssl,
-          NULL);
-
-      /* 3rd server was removed */
-      if (i == 2)
-        i++;
-
-      fail_if (address == NULL || strcmp (address, test_servers[i].address)
-          != 0);
-      fail_if (port != test_servers[i].port);
-      fail_if (ssl != test_servers[i].ssl);
-
-      g_free (address);
-    }
-
-  /* free the list */
-  g_slist_foreach (servers, (GFunc) g_object_unref, NULL);
-  g_slist_free (servers);
+  check_network (network, "id1", "Network1", servers_without_3, 3);
 
   g_object_unref (network);
 }
@@ -217,7 +141,7 @@ START_TEST (test_modified_signal_because_of_server)
   EmpathyIrcServer *server;
 
   network = empathy_irc_network_new ("id1", "Network1");
-  fail_if (network == NULL);
+  check_network (network, "id1", "Network1", NULL, 0);
 
   g_signal_connect (network, "modified", G_CALLBACK (modified_cb), NULL);
 
@@ -249,16 +173,26 @@ START_TEST (test_empathy_irc_network_set_server_position)
 {
   EmpathyIrcNetwork *network;
   GSList *servers, *l;
-  gchar *address;
+  struct server_t test_servers[] = {
+    { "server1", 6667, FALSE },
+    { "server2", 6668, TRUE },
+    { "server3", 6667, FALSE },
+    { "server4", 6669, TRUE }};
+  struct server_t test_servers_sorted[] = {
+    { "server2", 6668, TRUE },
+    { "server4", 6669, TRUE },
+    { "server3", 6667, FALSE },
+    { "server1", 6667, FALSE }};
 
   network = empathy_irc_network_new ("id1", "Network1");
-  fail_if (network == NULL);
+  check_network (network, "id1", "Network1", NULL, 0);
 
   modified = FALSE;
   g_signal_connect (network, "modified", G_CALLBACK (modified_cb), NULL);
 
   /* add the servers */
-  add_test_servers (network);
+  add_servers (network, test_servers, 4);
+  check_network (network, "id1", "Network1", test_servers, 4);
 
   /* get servers list */
   servers = empathy_irc_network_get_servers (network);
@@ -286,34 +220,8 @@ START_TEST (test_empathy_irc_network_set_server_position)
   g_slist_foreach (servers, (GFunc) g_object_unref, NULL);
   g_slist_free (servers);
 
-  /* get servers list */
-  servers = empathy_irc_network_get_servers (network);
-  fail_if (g_slist_length (servers) != 4);
-
-  /* check the new servers list */
-  l = servers;
-  g_object_get (l->data, "address", &address, NULL);
-  fail_if (address == NULL || strcmp (address, "server2") != 0);
-  g_free (address);
-
-  l = g_slist_next (l);
-  g_object_get (l->data, "address", &address, NULL);
-  fail_if (address == NULL || strcmp (address, "server4") != 0);
-  g_free (address);
-
-  l = g_slist_next (l);
-  g_object_get (l->data, "address", &address, NULL);
-  fail_if (address == NULL || strcmp (address, "server3") != 0);
-  g_free (address);
-
-  l = g_slist_next (l);
-  g_object_get (l->data, "address", &address, NULL);
-  fail_if (address == NULL || strcmp (address, "server1") != 0);
-  g_free (address);
-
-  /* free the list */
-  g_slist_foreach (servers, (GFunc) g_object_unref, NULL);
-  g_slist_free (servers);
+  /* Check if servers are sorted */
+  check_network (network, "id1", "Network1", test_servers_sorted, 4);
 }
 END_TEST
 
