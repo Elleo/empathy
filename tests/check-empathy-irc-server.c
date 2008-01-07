@@ -5,30 +5,19 @@
 #include <check.h>
 #include "check-helpers.h"
 #include "check-libempathy.h"
+#include "check-irc-helper.h"
 
 #include <libempathy/empathy-irc-server.h>
 
 START_TEST (test_empathy_irc_server_new)
 {
   EmpathyIrcServer *server;
-  gchar *address;
-  guint port;
-  gboolean ssl;
 
   server = empathy_irc_server_new ("test.localhost", 6667, TRUE);
   fail_if (server == NULL);
 
-  g_object_get (server,
-      "address", &address,
-      "port", &port,
-      "ssl", &ssl,
-      NULL);
+  check_server (server, "test.localhost", 6667, TRUE);
 
-  fail_if (address == NULL || strcmp (address, "test.localhost") != 0);
-  fail_if (port != 6667);
-  fail_if (!ssl);
-
-  g_free (address);
   g_object_unref (server);
 }
 END_TEST
@@ -36,9 +25,6 @@ END_TEST
 START_TEST (test_property_change)
 {
   EmpathyIrcServer *server;
-  gchar *address;
-  guint port;
-  gboolean ssl;
 
   server = empathy_irc_server_new ("test.localhost", 6667, TRUE);
   fail_if (server == NULL);
@@ -49,19 +35,9 @@ START_TEST (test_property_change)
       "ssl", FALSE,
       NULL);
 
-  g_object_get (server,
-      "address", &address,
-      "port", &port,
-      "ssl", &ssl,
-      NULL);
+  check_server (server, "test2.localhost", 6668, FALSE);
 
-  fail_if (address == NULL || strcmp (address, "test2.localhost") != 0);
-  fail_if (port != 6668);
-  fail_if (ssl);
-
-  g_free (address);
   g_object_unref (server);
-
 }
 END_TEST
 
