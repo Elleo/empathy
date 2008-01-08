@@ -11,6 +11,54 @@
 
 #define GLOBAL_SAMPLE "xml/default-irc-networks-sample.xml"
 
+START_TEST (test_empathy_irc_network_manager_add)
+{
+  EmpathyIrcNetworkManager *mgr;
+  EmpathyIrcNetwork *network;
+  GSList *networks;
+  gchar *name;
+
+  mgr = empathy_irc_network_manager_new (NULL, NULL);
+  fail_if (mgr == NULL);
+
+  networks = empathy_irc_network_manager_get_networks (mgr);
+  fail_if (networks != NULL);
+
+  /* add a network */
+  network = empathy_irc_network_new ("My Network");
+  fail_if (network == NULL);
+  empathy_irc_network_manager_add (mgr, network);
+  g_object_unref (network);
+
+  networks = empathy_irc_network_manager_get_networks (mgr);
+  fail_if (g_slist_length (networks) != 1);
+  g_object_get (networks->data, "name", &name, NULL);
+  fail_if (name == NULL || strcmp (name, "My Network") != 0);
+  g_free (name);
+  g_slist_foreach (networks, (GFunc) g_object_unref, NULL);
+  g_slist_free (networks);
+
+  /* add another network having the same name */
+  network = empathy_irc_network_new ("My Network");
+  fail_if (network == NULL);
+  empathy_irc_network_manager_add (mgr, network);
+  g_object_unref (network);
+
+  networks = empathy_irc_network_manager_get_networks (mgr);
+  fail_if (g_slist_length (networks) != 2);
+  g_object_get (networks->data, "name", &name, NULL);
+  fail_if (name == NULL || strcmp (name, "My Network") != 0);
+  g_free (name);
+  g_object_get (g_slist_next(networks)->data, "name", &name, NULL);
+  fail_if (name == NULL || strcmp (name, "My Network") != 0);
+  g_free (name);
+  g_slist_foreach (networks, (GFunc) g_object_unref, NULL);
+  g_slist_free (networks);
+
+  g_object_unref (mgr);
+}
+END_TEST
+
 START_TEST (test_load_global_file)
 {
   EmpathyIrcNetworkManager *mgr;
@@ -68,6 +116,8 @@ START_TEST (test_load_global_file)
         {
           fail_if (TRUE);
         }
+
+      g_free (name);
     }
   fail_if (!network_checked[0] || !network_checked[1] || !network_checked[2]);
 
@@ -81,6 +131,7 @@ TCase *
 make_empathy_irc_network_manager_tcase (void)
 {
     TCase *tc = tcase_create ("empathy-irc-network-manager");
+    tcase_add_test (tc, test_empathy_irc_network_manager_add);
     tcase_add_test (tc, test_load_global_file);
     return tc;
 }
