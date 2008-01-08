@@ -21,7 +21,7 @@ struct server_t
 void check_server (EmpathyIrcServer *server, const gchar *_address,
     guint _port, gboolean _ssl);
 
-void check_network (EmpathyIrcNetwork *network, const gchar *_id,
-    const gchar *_name, struct server_t *_servers, guint nb_servers);
+void check_network (EmpathyIrcNetwork *network, const gchar *_name,
+    struct server_t *_servers, guint nb_servers);
 
 #endif /* __CHECK_IRC_HELPER_H__ */

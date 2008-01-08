@@ -35,8 +35,7 @@ G_DEFINE_TYPE (EmpathyIrcNetwork, empathy_irc_network, G_TYPE_OBJECT);
 /* properties */
 enum
 {
-  PROP_ID = 1,
-  PROP_NAME,
+  PROP_NAME = 1,
   LAST_PROPERTY
 };
 
@@ -53,7 +52,6 @@ typedef struct _EmpathyIrcNetworkPrivate EmpathyIrcNetworkPrivate;
 
 struct _EmpathyIrcNetworkPrivate
 {
-  gchar *id;
   gchar *name;
   GSList *servers;
 };
@@ -79,9 +77,6 @@ empathy_irc_network_get_property (GObject *object,
 
   switch (property_id)
     {
-      case PROP_ID:
-        g_value_set_string (value, priv->id);
-        break;
       case PROP_NAME:
         g_value_set_string (value, priv->name);
         break;
@@ -102,10 +97,6 @@ empathy_irc_network_set_property (GObject *object,
 
   switch (property_id)
     {
-      case PROP_ID:
-        g_free (priv->id);
-        priv->id = g_value_dup_string (value);
-        break;
       case PROP_NAME:
         if (tp_strdiff (priv->name, g_value_get_string (value)))
           {
@@ -144,7 +135,6 @@ empathy_irc_network_finalize (GObject *object)
   EmpathyIrcNetworkPrivate *priv = EMPATHY_IRC_NETWORK_GET_PRIVATE (self);
 
   g_slist_free (priv->servers);
-  g_free (priv->id);
   g_free (priv->name);
 
   G_OBJECT_CLASS (empathy_irc_network_parent_class)->finalize (object);
@@ -177,18 +167,6 @@ empathy_irc_network_class_init (EmpathyIrcNetworkClass *klass)
   object_class->finalize = empathy_irc_network_finalize;
 
   param_spec = g_param_spec_string (
-      "id",
-      "Identifier",
-      "The unique identifier of this network",
-      NULL,
-      G_PARAM_CONSTRUCT_ONLY |
-      G_PARAM_READWRITE |
-      G_PARAM_STATIC_NAME |
-      G_PARAM_STATIC_NICK |
-      G_PARAM_STATIC_BLURB);
-  g_object_class_install_property (object_class, PROP_ID, param_spec);
-
-  param_spec = g_param_spec_string (
       "name",
       "Network name",
       "The displayed name of this network",
@@ -210,11 +188,9 @@ empathy_irc_network_class_init (EmpathyIrcNetworkClass *klass)
 }
 
 EmpathyIrcNetwork *
-empathy_irc_network_new (const gchar *id,
-                         const gchar *name)
+empathy_irc_network_new (const gchar *name)
 {
   return g_object_new (EMPATHY_TYPE_IRC_NETWORK,
-      "id", id,
       "name", name,
       NULL);
 }

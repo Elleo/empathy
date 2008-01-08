@@ -51,17 +51,17 @@ START_TEST (test_load_global_file)
 
       if (strcmp (name, "Freenode") == 0)
         {
-          check_network (l->data, "freenode", "Freenode", freenode_servers, 2);
+          check_network (l->data, "Freenode", freenode_servers, 2);
           network_checked[0] = TRUE;
         }
       else if (strcmp (name, "GIMPNet") == 0)
         {
-          check_network (l->data, "gimpnet", "GIMPNet", gimpnet_servers, 2);
+          check_network (l->data, "GIMPNet", gimpnet_servers, 2);
           network_checked[1] = TRUE;
         }
       else if (strcmp (name, "Test Server") == 0)
         {
-          check_network (l->data, "testsrv", "Test Server", test_servers, 1);
+          check_network (l->data, "Test Server", test_servers, 1);
           network_checked[2] = TRUE;
         }
       else

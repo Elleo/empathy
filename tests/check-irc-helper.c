@@ -27,23 +27,20 @@ check_server (EmpathyIrcServer *server,
 
 void
 check_network (EmpathyIrcNetwork *network,
-              const gchar *_id,
               const gchar *_name,
               struct server_t *_servers,
               guint nb_servers)
 {
-  gchar *id , *name;
+  gchar  *name;
   GSList *servers, *l;
   guint i;
 
   fail_if (network == NULL);
 
   g_object_get (network,
-      "id", &id,
       "name", &name,
       NULL);
 
-  fail_if (id == NULL || strcmp (id, _id) != 0);
   fail_if (name == NULL || strcmp (name, _name) != 0);
 
   servers = empathy_irc_network_get_servers (network);
@@ -75,6 +72,5 @@ check_network (EmpathyIrcNetwork *network,
 
   g_slist_foreach (servers, (GFunc) g_object_unref, NULL);
   g_slist_free (servers);
-  g_free (id);
   g_free (name);
 }

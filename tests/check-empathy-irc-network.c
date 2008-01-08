@@ -13,8 +13,8 @@ START_TEST (test_empathy_irc_network_new)
 {
   EmpathyIrcNetwork *network;
 
-  network = empathy_irc_network_new ("id1", "Network1");
-  check_network (network, "id1", "Network1", NULL, 0);
+  network = empathy_irc_network_new ("Network1");
+  check_network (network, "Network1", NULL, 0);
 
   g_object_unref (network);
 }
@@ -24,14 +24,14 @@ START_TEST (test_property_change)
 {
   EmpathyIrcNetwork *network;
 
-  network = empathy_irc_network_new ("id1", "Network1");
-  check_network (network, "id1", "Network1", NULL, 0);
+  network = empathy_irc_network_new ("Network1");
+  check_network (network, "Network1", NULL, 0);
 
   g_object_set (network,
       "name", "Network2",
       NULL);
 
-  check_network (network, "id1", "Network2", NULL, 0);
+  check_network (network, "Network2", NULL, 0);
 
   g_object_unref (network);
 
@@ -51,8 +51,8 @@ START_TEST (test_modified_signal)
 {
   EmpathyIrcNetwork *network;
 
-  network = empathy_irc_network_new ("id1", "Network1");
-  check_network (network, "id1", "Network1", NULL, 0);
+  network = empathy_irc_network_new ("Network1");
+  check_network (network, "Network1", NULL, 0);
 
   modified = FALSE;
   g_signal_connect (network, "modified", G_CALLBACK (modified_cb), NULL);
@@ -102,18 +102,18 @@ START_TEST (test_add_server)
     { "server2", 6668, TRUE },
     { "server4", 6669, TRUE }};
 
-  network = empathy_irc_network_new ("id1", "Network1");
-  check_network (network, "id1", "Network1", NULL, 0);
+  network = empathy_irc_network_new ("Network1");
+  check_network (network, "Network1", NULL, 0);
 
   modified = FALSE;
   g_signal_connect (network, "modified", G_CALLBACK (modified_cb), NULL);
 
-  check_network (network, "id1", "Network1", NULL, 0);
+  check_network (network, "Network1", NULL, 0);
 
   /* add the servers */
   add_servers (network, test_servers, 4);
 
-  check_network (network, "id1", "Network1", test_servers, 4);
+  check_network (network, "Network1", test_servers, 4);
 
   /* Now let's remove the 3rd server */
   servers = empathy_irc_network_get_servers (network);
@@ -129,7 +129,7 @@ START_TEST (test_add_server)
   g_slist_free (servers);
 
   /* The 3rd server should have disappear */
-  check_network (network, "id1", "Network1", servers_without_3, 3);
+  check_network (network, "Network1", servers_without_3, 3);
 
   g_object_unref (network);
 }
@@ -140,8 +140,8 @@ START_TEST (test_modified_signal_because_of_server)
   EmpathyIrcNetwork *network;
   EmpathyIrcServer *server;
 
-  network = empathy_irc_network_new ("id1", "Network1");
-  check_network (network, "id1", "Network1", NULL, 0);
+  network = empathy_irc_network_new ("Network1");
+  check_network (network, "Network1", NULL, 0);
 
   g_signal_connect (network, "modified", G_CALLBACK (modified_cb), NULL);
 
@@ -184,15 +184,15 @@ START_TEST (test_empathy_irc_network_set_server_position)
     { "server3", 6667, FALSE },
     { "server1", 6667, FALSE }};
 
-  network = empathy_irc_network_new ("id1", "Network1");
-  check_network (network, "id1", "Network1", NULL, 0);
+  network = empathy_irc_network_new ("Network1");
+  check_network (network, "Network1", NULL, 0);
 
   modified = FALSE;
   g_signal_connect (network, "modified", G_CALLBACK (modified_cb), NULL);
 
   /* add the servers */
   add_servers (network, test_servers, 4);
-  check_network (network, "id1", "Network1", test_servers, 4);
+  check_network (network, "Network1", test_servers, 4);
 
   /* get servers list */
   servers = empathy_irc_network_get_servers (network);
@@ -221,7 +221,7 @@ START_TEST (test_empathy_irc_network_set_server_position)
   g_slist_free (servers);
 
   /* Check if servers are sorted */
-  check_network (network, "id1", "Network1", test_servers_sorted, 4);
+  check_network (network, "Network1", test_servers_sorted, 4);
 }
 END_TEST
 

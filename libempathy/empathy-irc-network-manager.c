@@ -418,7 +418,8 @@ irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
 
   id = xmlGetProp (node, "id");
   name = xmlGetProp (node, "name");
-  network = empathy_irc_network_new (id, name);
+  network = empathy_irc_network_new (name);
+  add_network (self, network, id);
   empathy_debug (DEBUG_DOMAIN, "add network %s (id %s)", name, id);
 
   for (child = node->children; child; child = child->next)
@@ -438,8 +439,6 @@ irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
 
       xmlFree (str);
     }
-
-  add_network (self, network, id);
 
   g_object_unref (network);
   xmlFree (name);
