@@ -45,7 +45,7 @@ typedef struct _EmpathyIrcNetworkManagerPrivate
     EmpathyIrcNetworkManagerPrivate;
 
 struct _EmpathyIrcNetworkManagerPrivate {
-  GSList *irc_networks;
+  GHashTable *networks;
 
   gchar *global_file;
   gchar *user_file;
@@ -141,8 +141,7 @@ empathy_irc_network_manager_finalize (GObject *object)
   g_free (priv->global_file);
   g_free (priv->user_file);
 
-  g_slist_foreach (priv->irc_networks, (GFunc) g_object_unref, NULL);
-  g_slist_free (priv->irc_networks);
+  g_hash_table_destroy (priv->networks);
 
   G_OBJECT_CLASS (empathy_irc_network_manager_parent_class)->finalize (object);
 }
@@ -154,6 +153,9 @@ empathy_irc_network_manager_init (EmpathyIrcNetworkManager *self)
       EMPATHY_TYPE_IRC_NETWORK_MANAGER, EmpathyIrcNetworkManagerPrivate);
 
   self->priv = priv;
+
+  priv->networks = g_hash_table_new_full (g_str_hash, g_str_equal,
+      (GDestroyNotify) g_free, (GDestroyNotify) g_object_unref);
 }
 
 static void
@@ -212,14 +214,25 @@ empathy_irc_network_manager_new (const gchar *global_file,
   return manager;
 }
 
+static void
+add_network (EmpathyIrcNetworkManager *self,
+             EmpathyIrcNetwork *network,
+             const gchar *id)
+{
+  EmpathyIrcNetworkManagerPrivate *priv =
+    EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
+
+  g_hash_table_insert (priv->networks, g_strdup (id), g_object_ref (network));
+}
+
 gboolean
 empathy_irc_network_manager_add (EmpathyIrcNetworkManager *self,
-                                 EmpathyIrcNetwork *irc_network)
+                                 EmpathyIrcNetwork *network)
 {
   EmpathyIrcNetworkManagerPrivate *priv;
 
   g_return_val_if_fail (EMPATHY_IS_IRC_NETWORK_MANAGER (self), FALSE);
-  g_return_val_if_fail (EMPATHY_IS_IRC_NETWORK (irc_network), FALSE);
+  g_return_val_if_fail (EMPATHY_IS_IRC_NETWORK (network), FALSE);
 
   priv = EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
 
@@ -241,8 +254,9 @@ empathy_irc_network_manager_add (EmpathyIrcNetworkManager *self,
     return TRUE;
   }
   */
-  priv->irc_networks = g_slist_append (priv->irc_networks,
-      g_object_ref (irc_network));
+
+  /* TODO: generate an id */
+  add_network (self, network, "foo");
 
   return FALSE;
 }
@@ -269,18 +283,26 @@ empathy_irc_network_manager_remove (EmpathyIrcNetworkManager *self,
   */
 }
 
+static void
+append_network_to_list (const gchar *id,
+                        EmpathyIrcNetwork *network,
+                        GSList **list)
+{
+  *list = g_slist_prepend (*list, g_object_ref (network));
+}
+
 GSList *
 empathy_irc_network_manager_get_networks (EmpathyIrcNetworkManager *self)
 {
   EmpathyIrcNetworkManagerPrivate *priv;
-  GSList *irc_networks;
+  GSList *irc_networks = NULL;
 
   g_return_val_if_fail (EMPATHY_IS_IRC_NETWORK_MANAGER (self), NULL);
 
   priv = EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
 
-  irc_networks = g_slist_copy (priv->irc_networks);
-  g_slist_foreach (irc_networks, (GFunc) g_object_ref, NULL);
+  g_hash_table_foreach (priv->networks, (GHFunc) append_network_to_list,
+      &irc_networks);
 
   return irc_networks;
 }
@@ -398,8 +420,6 @@ irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
   name = xmlGetProp (node, "name");
   network = empathy_irc_network_new (id, name);
   empathy_debug (DEBUG_DOMAIN, "add network %s (id %s)", name, id);
-  xmlFree (name);
-  xmlFree (id);
 
   for (child = node->children; child; child = child->next)
     {
@@ -419,9 +439,11 @@ irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
       xmlFree (str);
     }
 
-  empathy_irc_network_manager_add (self, network);
+  add_network (self, network, id);
 
   g_object_unref (network);
+  xmlFree (name);
+  xmlFree (id);
 }
 
 static gboolean
