@@ -49,6 +49,7 @@ struct _EmpathyIrcNetworkManagerPrivate {
 
   gchar *global_file;
   gchar *user_file;
+  gboolean modified;
 };
 
 #define EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE(obj)\
@@ -111,6 +112,25 @@ empathy_irc_network_manager_set_property (GObject *object,
         break;
     }
 }
+
+static GObject *
+empathy_irc_network_manager_constructor (GType type,
+                                         guint n_props,
+                                         GObjectConstructParam *props)
+{
+  GObject *obj;
+  EmpathyIrcNetworkManager *self;
+
+  /* Parent constructor chain */
+  obj = G_OBJECT_CLASS (empathy_irc_network_manager_parent_class)->
+        constructor (type, n_props, props);
+
+  self = EMPATHY_IRC_NETWORK_MANAGER (obj);
+  irc_network_manager_load_servers (self);
+
+  return obj;
+}
+
 static void
 empathy_irc_network_manager_finalize (GObject *object)
 {
@@ -142,6 +162,7 @@ empathy_irc_network_manager_class_init (EmpathyIrcNetworkManagerClass *klass)
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GParamSpec *param_spec;
 
+  object_class->constructor = empathy_irc_network_manager_constructor;
   object_class->get_property = empathy_irc_network_manager_get_property;
   object_class->set_property = empathy_irc_network_manager_set_property;
 
@@ -187,10 +208,6 @@ empathy_irc_network_manager_new (const gchar *global_file,
       "global-file", global_file,
       "user-file", user_file,
       NULL);
-
-  /* load file */
-  /* FIXME move that to the constructor */
-  irc_network_manager_load_servers (manager);
 
   return manager;
 }
@@ -304,8 +321,13 @@ load_global_file (EmpathyIrcNetworkManager *self)
 static void
 irc_network_manager_load_servers (EmpathyIrcNetworkManager *self)
 {
-  load_global_file (self);
+  EmpathyIrcNetworkManagerPrivate *priv =
+    EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
+
   /* TODO: load user file */
+  load_global_file (self);
+
+  priv->modified = FALSE;
 }
 
 static void
