@@ -225,40 +225,43 @@ add_network (EmpathyIrcNetworkManager *self,
   g_hash_table_insert (priv->networks, g_strdup (id), g_object_ref (network));
 }
 
-gboolean
+void
 empathy_irc_network_manager_add (EmpathyIrcNetworkManager *self,
                                  EmpathyIrcNetwork *network)
 {
   EmpathyIrcNetworkManagerPrivate *priv;
+  gchar *id, *bare_id, *tmp;
+  guint no = 0;
 
-  g_return_val_if_fail (EMPATHY_IS_IRC_NETWORK_MANAGER (self), FALSE);
-  g_return_val_if_fail (EMPATHY_IS_IRC_NETWORK (network), FALSE);
+  g_return_if_fail (EMPATHY_IS_IRC_NETWORK_MANAGER (self));
+  g_return_if_fail (EMPATHY_IS_IRC_NETWORK (network));
 
   priv = EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
 
-  /* Don't add more than once */
-  /*
-  if (!empathy_irc_network_manager_find (manager, empathy_irc_network_get_name (irc_network))) {
-    const gchar       *name;
+  /* generate an id for this network */
+  g_object_get (network, "name", &tmp, NULL);
+  bare_id = g_ascii_strdown (tmp, strlen (tmp));
+  id = g_strdup (bare_id);
+  g_free (tmp);
+  while (g_hash_table_lookup (priv->networks, id) != NULL && no < G_MAXUINT)
+    {
+      g_free (id);
+      id = g_strdup_printf ("%s%u", bare_id, no++);
+    }
 
-    name = empathy_irc_network_get_name (irc_network);
+  if (no == G_MAXUINT)
+    {
+      empathy_debug (DEBUG_DOMAIN,
+          "Can't add network: too many networks using a similiar ID");
+      return;
+    }
 
-    empathy_debug (DEBUG_DOMAIN, "Adding %s irc_network with name:'%s'",
-            empathy_irc_network_type_to_string (type),
-            name);
+  empathy_debug (DEBUG_DOMAIN, "add server with \"%s\" as ID", id);
 
-    priv->irc_networks = g_list_append (priv->irc_networks, g_object_ref (irc_network));
+  add_network (self, network, id);
 
-    g_signal_emit (manager, signals[IRC_NETWORK_ADDED], 0, irc_network);
-
-    return TRUE;
-  }
-  */
-
-  /* TODO: generate an id */
-  add_network (self, network, "foo");
-
-  return FALSE;
+  g_free (bare_id);
+  g_free (id);
 }
 
 void
@@ -385,8 +388,8 @@ irc_network_manager_parse_irc_server (EmpathyIrcNetwork *network,
           if (ssl == NULL || strcmp (ssl, "TRUE") == 0)
             have_ssl = TRUE;
 
-          empathy_debug (DEBUG_DOMAIN, "add server %s port %d ssl %d", address,
-              port_nb, have_ssl);
+          empathy_debug (DEBUG_DOMAIN, "parsed server %s port %d ssl %d",
+              address, port_nb, have_ssl);
 
           server = empathy_irc_server_new (address, port_nb, have_ssl);
           empathy_irc_network_add_server (network, server);
