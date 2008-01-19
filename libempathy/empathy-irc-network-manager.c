@@ -264,26 +264,27 @@ empathy_irc_network_manager_add (EmpathyIrcNetworkManager *self,
   g_free (id);
 }
 
+static gboolean
+remove_network_foreach (const gchar *id,
+                        EmpathyIrcNetwork *network,
+                        EmpathyIrcNetwork *network_to_remove)
+{
+  return (network == network_to_remove);
+}
+
 void
 empathy_irc_network_manager_remove (EmpathyIrcNetworkManager *self,
-                                    EmpathyIrcNetwork *irc_network)
+                                    EmpathyIrcNetwork *network)
 {
   EmpathyIrcNetworkManagerPrivate *priv;
 
   g_return_if_fail (EMPATHY_IS_IRC_NETWORK_MANAGER (self));
-  g_return_if_fail (EMPATHY_IS_IRC_NETWORK (irc_network));
+  g_return_if_fail (EMPATHY_IS_IRC_NETWORK (network));
 
   priv = EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
 
-  /*
-  empathy_debug (DEBUG_DOMAIN,
-          "Removing irc_network with name:'%s'",
-          empathy_irc_network_get_name (irc_network));
-
-  priv->irc_networks = g_slist_remove (priv->irc_networks, irc_network);
-
-  g_object_unref (irc_network);
-  */
+  g_hash_table_foreach_remove (priv->networks,
+      (GHRFunc) remove_network_foreach, network);
 }
 
 static void
