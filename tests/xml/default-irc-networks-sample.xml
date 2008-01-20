@@ -21,4 +21,10 @@
     </servers>
   </network>
 
+  <network id="undernet" name="Undernet">
+    <servers>
+      <server address="eu.undernet.org" port="6667" ssl="FALSE" />
+    </servers>
+  </network>
+
 </networks>
