@@ -11,6 +11,7 @@
 
 #define GLOBAL_SAMPLE "xml/default-irc-networks-sample.xml"
 #define USER_SAMPLE "xml/user-irc-networks-sample.xml"
+#define USER_FILE "xml/user-irc-networks.xml"
 
 START_TEST (test_empathy_irc_network_manager_add)
 {
@@ -215,6 +216,20 @@ START_TEST (test_empathy_irc_network_manager_remove)
 }
 END_TEST
 
+static void
+copy_user_file (void)
+{
+  gboolean result;
+  gchar *buffer;
+  gsize length;
+
+  result = g_file_get_contents (USER_SAMPLE, &buffer, &length, NULL);
+  fail_if (!result);
+
+  result = g_file_set_contents (USER_FILE, buffer, length, NULL);
+  fail_if (!result);
+}
+
 START_TEST (test_load_user_file)
 {
   EmpathyIrcNetworkManager *mgr;
@@ -228,14 +243,15 @@ START_TEST (test_load_user_file)
     { "irc.mysrv.net", 7495, TRUE }};
   gboolean network_checked[2];
 
-  mgr = empathy_irc_network_manager_new (NULL, USER_SAMPLE);
+  copy_user_file ();
+  mgr = empathy_irc_network_manager_new (NULL, USER_FILE);
 
   g_object_get (mgr,
       "global-file", &global_file,
       "user-file", &user_file,
       NULL);
   fail_if (global_file != NULL);
-  fail_if (user_file == NULL || strcmp (user_file, USER_SAMPLE) != 0);
+  fail_if (user_file == NULL || strcmp (user_file, USER_FILE) != 0);
   g_free (global_file);
   g_free (user_file);
 
@@ -292,14 +308,14 @@ START_TEST (test_load_both_files)
     { "irc.mysrv.net", 7495, TRUE }};
   gboolean network_checked[3];
 
-  mgr = empathy_irc_network_manager_new (GLOBAL_SAMPLE, USER_SAMPLE);
+  mgr = empathy_irc_network_manager_new (GLOBAL_SAMPLE, USER_FILE);
 
   g_object_get (mgr,
       "global-file", &global_file,
       "user-file", &user_file,
       NULL);
   fail_if (global_file == NULL || strcmp (global_file, GLOBAL_SAMPLE) != 0);
-  fail_if (user_file == NULL || strcmp (user_file, USER_SAMPLE) != 0);
+  fail_if (user_file == NULL || strcmp (user_file, USER_FILE) != 0);
   g_free (global_file);
   g_free (user_file);
 
