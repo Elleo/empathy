@@ -17,4 +17,10 @@
     </servers>
   </network>
 
+  <network id="anothersrv" name="Another Server">
+    <servers>
+      <server address="irc.anothersrv.be" port="6660" ssl="FALSE" />
+    </servers>
+  </network>
+
 </networks>

@@ -243,7 +243,9 @@ START_TEST (test_load_user_file)
     { "irc.au.gimp.org", 6667, FALSE }};
   struct server_t my_server[] = {
     { "irc.mysrv.net", 7495, TRUE }};
-  gboolean network_checked[2];
+  struct server_t another_server[] = {
+    { "irc.anothersrv.be", 6660, FALSE }};
+  gboolean network_checked[3];
 
   copy_user_file ();
   mgr = empathy_irc_network_manager_new (NULL, USER_FILE);
@@ -258,9 +260,9 @@ START_TEST (test_load_user_file)
   g_free (user_file);
 
   networks = empathy_irc_network_manager_get_networks (mgr);
-  fail_if (g_slist_length (networks) != 2);
+  fail_if (g_slist_length (networks) != 3);
 
-  network_checked[0] = network_checked[1] = FALSE;
+  network_checked[0] = network_checked[1] = network_checked[2] = FALSE;
   /* check networks and servers */
   for (l = networks; l != NULL; l = g_slist_next (l))
     {
@@ -279,6 +281,11 @@ START_TEST (test_load_user_file)
           check_network (l->data, "My Server", my_server, 1);
           network_checked[1] = TRUE;
         }
+      else if (strcmp (name, "Another Server") == 0)
+        {
+          check_network (l->data, "Another Server", another_server, 1);
+          network_checked[2] = TRUE;
+        }
       else
         {
           fail_if (TRUE);
@@ -286,7 +293,7 @@ START_TEST (test_load_user_file)
 
       g_free (name);
     }
-  fail_if (!network_checked[0] || !network_checked[1]);
+  fail_if (!network_checked[0] || !network_checked[1] || !network_checked[2]);
 
   g_slist_foreach (networks, (GFunc) g_object_unref, NULL);
   g_slist_free (networks);
@@ -308,7 +315,9 @@ START_TEST (test_load_both_files)
     { "irc.au.gimp.org", 6667, FALSE }};
   struct server_t my_server[] = {
     { "irc.mysrv.net", 7495, TRUE }};
-  gboolean network_checked[3];
+  struct server_t another_server[] = {
+    { "irc.anothersrv.be", 6660, FALSE }};
+  gboolean network_checked[4];
 
   mgr = empathy_irc_network_manager_new (GLOBAL_SAMPLE, USER_FILE);
 
@@ -322,9 +331,10 @@ START_TEST (test_load_both_files)
   g_free (user_file);
 
   networks = empathy_irc_network_manager_get_networks (mgr);
-  fail_if (g_slist_length (networks) != 3);
+  fail_if (g_slist_length (networks) != 4);
 
-  network_checked[0] = network_checked[1] = network_checked[2] = FALSE;
+  network_checked[0] = network_checked[1] = network_checked[2] =
+    network_checked[3] = FALSE;
   /* check networks and servers */
   for (l = networks; l != NULL; l = g_slist_next (l))
     {
@@ -348,6 +358,11 @@ START_TEST (test_load_both_files)
           check_network (l->data, "My Server", my_server, 1);
           network_checked[2] = TRUE;
         }
+      else if (strcmp (name, "Another Server") == 0)
+        {
+          check_network (l->data, "Another Server", another_server, 1);
+          network_checked[3] = TRUE;
+        }
       else
         {
           fail_if (TRUE);
@@ -355,7 +370,8 @@ START_TEST (test_load_both_files)
 
       g_free (name);
     }
-  fail_if (!network_checked[0] || !network_checked[1] || !network_checked[2]);
+  fail_if (!network_checked[0] || !network_checked[1] || !network_checked[2] ||
+      !network_checked[3]);
 
   g_slist_foreach (networks, (GFunc) g_object_unref, NULL);
   g_slist_free (networks);
@@ -375,8 +391,10 @@ START_TEST (test_modify_user_file)
     { "irc.us.gimp.org", 6668, FALSE }};
   struct server_t great_server[] = {
     { "irc.greatserver.com", 7873, TRUE }};
+  struct server_t another_server[] = {
+    { "irc.anothersrv.be", 6660, FALSE }};
   gboolean network_modified[2];
-  gboolean network_checked[2];
+  gboolean network_checked[3];
 
   copy_user_file ();
   mgr = empathy_irc_network_manager_new (NULL, USER_FILE);
@@ -391,7 +409,7 @@ START_TEST (test_modify_user_file)
   g_free (user_file);
 
   networks = empathy_irc_network_manager_get_networks (mgr);
-  fail_if (g_slist_length (networks) != 2);
+  fail_if (g_slist_length (networks) != 3);
 
   network_modified[0] = network_modified[1] = FALSE;
   /* check networks and servers */
@@ -450,6 +468,10 @@ START_TEST (test_modify_user_file)
           empathy_irc_network_manager_remove (mgr, network);
           network_modified[1] = TRUE;
         }
+      else if (strcmp (name, "Another Server") == 0)
+        {
+          /* Don't change this one */
+        }
       else
         {
           fail_if (TRUE);
@@ -478,9 +500,9 @@ START_TEST (test_modify_user_file)
   mgr = empathy_irc_network_manager_new (NULL, USER_FILE);
 
   networks = empathy_irc_network_manager_get_networks (mgr);
-  fail_if (g_slist_length (networks) != 2);
+  fail_if (g_slist_length (networks) != 3);
 
-  network_checked[0] = network_checked[1] = FALSE;
+  network_checked[0] = network_checked[1] = network_checked[2] = FALSE;
   /* check networks and servers */
   for (l = networks; l != NULL; l = g_slist_next (l))
     {
@@ -499,6 +521,11 @@ START_TEST (test_modify_user_file)
           check_network (l->data, "Great Server", great_server, 1);
           network_checked[1] = TRUE;
         }
+      else if (strcmp (name, "Another Server") == 0)
+        {
+          check_network (l->data, "Another Server", another_server, 1);
+          network_checked[2] = TRUE;
+        }
       else
         {
           fail_if (TRUE);
@@ -506,7 +533,7 @@ START_TEST (test_modify_user_file)
 
       g_free (name);
     }
-  fail_if (!network_checked[0] || !network_checked[1]);
+  fail_if (!network_checked[0] || !network_checked[1] || !network_checked[2]);
 
   g_slist_foreach (networks, (GFunc) g_object_unref, NULL);
   g_slist_free (networks);
