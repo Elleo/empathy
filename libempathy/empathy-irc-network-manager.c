@@ -576,9 +576,7 @@ write_network_to_xml (const gchar *id,
       xmlNewProp (server_node, "port", tmp);
       g_free (tmp);
 
-      tmp = g_strdup_printf ("%s", ssl ? "TRUE": "FALSE");
-      xmlNewProp (server_node, "ssl", tmp);
-      g_free (tmp);
+      xmlNewProp (server_node, "ssl", ssl ? "TRUE": "FALSE");
 
       g_free (address);
     }
