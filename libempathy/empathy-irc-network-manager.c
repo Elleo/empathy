@@ -345,13 +345,32 @@ load_global_file (EmpathyIrcNetworkManager *self)
 }
 
 static void
+load_user_file (EmpathyIrcNetworkManager *self)
+{
+  EmpathyIrcNetworkManagerPrivate *priv =
+    EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
+
+  if (priv->user_file == NULL)
+    return;
+
+  if (!g_file_test (priv->user_file, G_FILE_TEST_EXISTS))
+    {
+      empathy_debug (DEBUG_DOMAIN, "User networks file %s doesn't exist",
+          priv->global_file);
+      return;
+    }
+
+  irc_network_manager_file_parse (self, priv->user_file);
+}
+
+static void
 irc_network_manager_load_servers (EmpathyIrcNetworkManager *self)
 {
   EmpathyIrcNetworkManagerPrivate *priv =
     EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
 
-  /* TODO: load user file */
   load_global_file (self);
+  load_user_file (self);
 
   priv->modified = FALSE;
 }
