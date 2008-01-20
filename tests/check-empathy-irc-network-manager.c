@@ -228,6 +228,8 @@ copy_user_file (void)
 
   result = g_file_set_contents (USER_FILE, buffer, length, NULL);
   fail_if (!result);
+
+  g_free (buffer);
 }
 
 START_TEST (test_load_user_file)
