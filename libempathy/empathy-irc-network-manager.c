@@ -428,6 +428,8 @@ static void
 irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
                                        xmlNodePtr node)
 {
+  EmpathyIrcNetworkManagerPrivate *priv =
+    EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
   EmpathyIrcNetwork  *network;
   xmlNodePtr child;
   gchar *str;
@@ -440,6 +442,14 @@ irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
     return;
 
   id = xmlGetProp (node, "id");
+
+  if (xmlHasProp (node, "dropped"))
+    {
+      g_hash_table_remove (priv->networks, id);
+      xmlFree (id);
+      return;
+    }
+
   name = xmlGetProp (node, "name");
   network = empathy_irc_network_new (name);
   add_network (self, network, id);
