@@ -533,9 +533,89 @@ irc_network_manager_file_parse (EmpathyIrcNetworkManager *self,
   return TRUE;
 }
 
+static void
+write_network_to_xml (const gchar *id,
+                      EmpathyIrcNetwork *network,
+                      xmlNodePtr root)
+{
+  xmlNodePtr network_node, servers_node;
+  GSList *servers, *l;
+  gchar *name;
+
+  network_node = xmlNewChild (root, NULL, "network", NULL);
+  xmlNewProp (network_node, "id", id);
+
+  g_object_get (network, "name", &name, NULL);
+  xmlNewProp (network_node, "name", name);
+  g_free (name);
+
+  servers = empathy_irc_network_get_servers (network);
+
+  servers_node = xmlNewChild (network_node, NULL, "servers", NULL);
+  for (l = servers; l != NULL; l = g_slist_next (l))
+    {
+      EmpathyIrcServer *server;
+      xmlNodePtr server_node;
+      gchar *address, *tmp;
+      guint port;
+      gboolean ssl;
+
+      server = l->data;
+
+      server_node = xmlNewChild (servers_node, NULL, "server", NULL);
+
+      g_object_get (server,
+          "address", &address,
+          "port", &port,
+          "ssl", &ssl,
+          NULL);
+
+      xmlNewProp (server_node, "address", address);
+
+      tmp = g_strdup_printf ("%u", port);
+      xmlNewProp (server_node, "port", tmp);
+      g_free (tmp);
+
+      tmp = g_strdup_printf ("%s", ssl ? "TRUE": "FALSE");
+      xmlNewProp (server_node, "ssl", tmp);
+      g_free (tmp);
+
+      g_free (address);
+    }
+
+  /* free the list */
+  g_slist_foreach (servers, (GFunc) g_object_unref, NULL);
+  g_slist_free (servers);
+}
+
 static gboolean
 irc_network_manager_file_save (EmpathyIrcNetworkManager *self)
 {
-  //TODO
+  EmpathyIrcNetworkManagerPrivate *priv =
+    EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
+  xmlDocPtr doc;
+  xmlNodePtr root;
+
+  if (priv->user_file == NULL)
+    {
+      empathy_debug (DEBUG_DOMAIN, "can't save: no user file defined");
+      return FALSE;
+    }
+
+  doc = xmlNewDoc ("1.0");
+  root = xmlNewNode (NULL, "networks");
+  xmlDocSetRootElement (doc, root);
+
+  g_hash_table_foreach (priv->networks, (GHFunc) write_network_to_xml, root);
+
+  /* Make sure the XML is indented properly */
+  xmlIndentTreeOutput = 1;
+
+  xmlSaveFormatFileEnc (priv->user_file, doc, "utf-8", 1);
+  xmlFreeDoc (doc);
+
+  xmlCleanupParser ();
+  xmlMemoryDump ();
+
   return TRUE;
 }
