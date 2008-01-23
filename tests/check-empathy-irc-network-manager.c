@@ -737,7 +737,7 @@ START_TEST (test_modify_both_files)
         }
       else if (strcmp (name, "Undernet") == 0)
         {
-          check_network (l->data, "Another Server", undernet_servers, 2);
+          check_network (l->data, "Undernet", undernet_servers, 2);
           network_checked[3] = TRUE;
         }
       else
