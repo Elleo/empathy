@@ -59,7 +59,7 @@ static void
 irc_network_manager_load_servers (EmpathyIrcNetworkManager *manager);
 static gboolean
 irc_network_manager_file_parse (EmpathyIrcNetworkManager *manager,
-    const gchar *filename);
+    const gchar *filename, gboolean user_defined);
 static gboolean
 irc_network_manager_file_save (EmpathyIrcNetworkManager *manager);
 
@@ -215,6 +215,13 @@ empathy_irc_network_manager_new (const gchar *global_file,
 }
 
 static void
+network_modified (EmpathyIrcNetwork *network,
+                  EmpathyIrcNetworkManager *self)
+{
+  network->user_defined = TRUE;
+}
+
+static void
 add_network (EmpathyIrcNetworkManager *self,
              EmpathyIrcNetwork *network,
              const gchar *id)
@@ -223,6 +230,8 @@ add_network (EmpathyIrcNetworkManager *self,
     EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
 
   g_hash_table_insert (priv->networks, g_strdup (id), g_object_ref (network));
+
+  g_signal_connect (network, "modified", G_CALLBACK (network_modified), self);
 }
 
 void
@@ -258,6 +267,7 @@ empathy_irc_network_manager_add (EmpathyIrcNetworkManager *self,
 
   empathy_debug (DEBUG_DOMAIN, "add server with \"%s\" as ID", id);
 
+  network->user_defined = TRUE;
   add_network (self, network, id);
 
   g_free (bare_id);
@@ -341,7 +351,7 @@ load_global_file (EmpathyIrcNetworkManager *self)
       return;
     }
 
-  irc_network_manager_file_parse (self, priv->global_file);
+  irc_network_manager_file_parse (self, priv->global_file, FALSE);
 }
 
 static void
@@ -360,7 +370,7 @@ load_user_file (EmpathyIrcNetworkManager *self)
       return;
     }
 
-  irc_network_manager_file_parse (self, priv->user_file);
+  irc_network_manager_file_parse (self, priv->user_file, TRUE);
 }
 
 static void
@@ -426,7 +436,8 @@ irc_network_manager_parse_irc_server (EmpathyIrcNetwork *network,
 
 static void
 irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
-                                       xmlNodePtr node)
+                                       xmlNodePtr node,
+                                       gboolean user_defined)
 {
   EmpathyIrcNetworkManagerPrivate *priv =
     EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
@@ -452,6 +463,7 @@ irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
 
   name = xmlGetProp (node, "name");
   network = empathy_irc_network_new (name);
+  network->user_defined = user_defined;
   add_network (self, network, id);
   empathy_debug (DEBUG_DOMAIN, "add network %s (id %s)", name, id);
 
@@ -480,7 +492,8 @@ irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
 
 static gboolean
 irc_network_manager_file_parse (EmpathyIrcNetworkManager *self,
-                                const gchar *filename)
+                                const gchar *filename,
+                                gboolean user_defined)
 {
   EmpathyIrcNetworkManagerPrivate *priv;
   xmlParserCtxtPtr ctxt;
@@ -517,7 +530,7 @@ irc_network_manager_file_parse (EmpathyIrcNetworkManager *self,
 
   for (node = networks->children; node; node = node->next)
     {
-      irc_network_manager_parse_irc_network (self, node);
+      irc_network_manager_parse_irc_network (self, node, user_defined);
     }
 
   /*
@@ -541,6 +554,10 @@ write_network_to_xml (const gchar *id,
   xmlNodePtr network_node, servers_node;
   GSList *servers, *l;
   gchar *name;
+
+  if (!network->user_defined)
+    /* no need to write this network to the XML */
+    return;
 
   network_node = xmlNewChild (root, NULL, "network", NULL);
   xmlNewProp (network_node, "id", id);

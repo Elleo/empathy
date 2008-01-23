@@ -36,6 +36,8 @@ struct _EmpathyIrcNetwork
     GObject parent;
 
     gpointer priv;
+
+    gboolean user_defined;
 };
 
 struct _EmpathyIrcNetworkClass
