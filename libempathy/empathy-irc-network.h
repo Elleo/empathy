@@ -38,6 +38,7 @@ struct _EmpathyIrcNetwork
     gpointer priv;
 
     gboolean user_defined;
+    gboolean dropped;
 };
 
 struct _EmpathyIrcNetworkClass

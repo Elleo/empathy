@@ -149,6 +149,9 @@ empathy_irc_network_init (EmpathyIrcNetwork *self)
   self->priv = priv;
 
   priv->servers = NULL;
+
+  self->user_defined = TRUE;
+  self->dropped = FALSE;
 }
 
 static void

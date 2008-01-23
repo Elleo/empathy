@@ -274,14 +274,6 @@ empathy_irc_network_manager_add (EmpathyIrcNetworkManager *self,
   g_free (id);
 }
 
-static gboolean
-remove_network_foreach (const gchar *id,
-                        EmpathyIrcNetwork *network,
-                        EmpathyIrcNetwork *network_to_remove)
-{
-  return (network == network_to_remove);
-}
-
 void
 empathy_irc_network_manager_remove (EmpathyIrcNetworkManager *self,
                                     EmpathyIrcNetwork *network)
@@ -293,8 +285,8 @@ empathy_irc_network_manager_remove (EmpathyIrcNetworkManager *self,
 
   priv = EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
 
-  g_hash_table_foreach_remove (priv->networks,
-      (GHRFunc) remove_network_foreach, network);
+  network->user_defined = TRUE;
+  network->dropped = TRUE;
 }
 
 static void
@@ -302,6 +294,9 @@ append_network_to_list (const gchar *id,
                         EmpathyIrcNetwork *network,
                         GSList **list)
 {
+  if (network->dropped)
+    return;
+
   *list = g_slist_prepend (*list, g_object_ref (network));
 }
 
@@ -449,17 +444,20 @@ irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
   if (!xmlHasProp (node, "id"))
     return;
 
-  if (!xmlHasProp (node, "name"))
-    return;
-
   id = xmlGetProp (node, "id");
-
   if (xmlHasProp (node, "dropped"))
     {
-      g_hash_table_remove (priv->networks, id);
-      xmlFree (id);
+      network = g_hash_table_lookup (priv->networks, id);
+      if (network != NULL)
+        {
+          network->dropped = TRUE;
+        }
+       xmlFree (id);
       return;
     }
+
+  if (!xmlHasProp (node, "name"))
+    return;
 
   name = xmlGetProp (node, "name");
   network = empathy_irc_network_new (name);
@@ -561,6 +559,12 @@ write_network_to_xml (const gchar *id,
 
   network_node = xmlNewChild (root, NULL, "network", NULL);
   xmlNewProp (network_node, "id", id);
+
+  if (network->dropped)
+    {
+      xmlNewProp (network_node, "dropped", "1");
+      return;
+    }
 
   g_object_get (network, "name", &name, NULL);
   xmlNewProp (network_node, "name", name);
