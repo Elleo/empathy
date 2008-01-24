@@ -38,11 +38,11 @@
 #include <libempathy/empathy-utils.h>
 #include <libempathy/empathy-debug.h>
 #include <libempathy/empathy-marshal.h>
+#include <libempathy/empathy-status-presets.h>
 
 #include "empathy-ui-utils.h"
 #include "empathy-images.h"
 #include "empathy-presence-chooser.h"
-#include "empathy-status-presets.h"
 
 #define GET_PRIV(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), EMPATHY_TYPE_PRESENCE_CHOOSER, EmpathyPresenceChooserPriv))
 
@@ -381,7 +381,7 @@ presence_chooser_scroll_event_cb (EmpathyPresenceChooser *chooser,
 		/* If we didn't get any match at all, it means the last state
 		 * was a custom one. Just switch to the first one.
 		 */
-		status = empathy_presence_state_get_default_status (states[0]);
+		status = empathy_presence_get_default_message (states[0]);
 
 		presence_chooser_reset_scroll_timeout (chooser);
 		empathy_idle_set_presence (priv->idle, states[0], status);
@@ -404,7 +404,7 @@ presence_chooser_get_presets (EmpathyPresenceChooser *chooser)
 		StateAndStatus *sas;
 		const gchar    *status;
 
-		status = empathy_presence_state_get_default_status (states[i]);
+		status = empathy_presence_get_default_message (states[i]);
 		sas = presence_chooser_state_and_status_new (states[i], status);
 		list = g_list_prepend (list, sas);
 
@@ -455,7 +455,7 @@ presence_chooser_flash_timeout_cb (EmpathyPresenceChooser *chooser)
 	}
 
 	gtk_image_set_from_icon_name (GTK_IMAGE (priv->image),
-				      empathy_icon_name_for_presence_state (state),
+				      empathy_icon_name_for_presence (state),
 				      GTK_ICON_SIZE_MENU);
 
 	on = !on;
@@ -500,7 +500,7 @@ presence_chooser_flash_stop (EmpathyPresenceChooser *chooser,
 	}
 
 	gtk_image_set_from_icon_name (GTK_IMAGE (priv->image),
-				      empathy_icon_name_for_presence_state (state),
+				      empathy_icon_name_for_presence (state),
 				      GTK_ICON_SIZE_MENU);
 
 	priv->last_state = state;
@@ -665,7 +665,7 @@ empathy_presence_chooser_create_menu (void)
 	for (i = 0; i < G_N_ELEMENTS (states); i += 2) {
 		GList       *list, *l;
 
-		status = empathy_presence_state_get_default_status (states[i]);
+		status = empathy_presence_get_default_message (states[i]);
 		presence_chooser_menu_add_item (menu,
 						status,
 						states[i]);
@@ -714,7 +714,7 @@ presence_chooser_menu_add_item (GtkWidget   *menu,
 	const gchar *icon_name;
 
 	item = gtk_image_menu_item_new_with_label (str);
-	icon_name = empathy_icon_name_for_presence_state (state);
+	icon_name = empathy_icon_name_for_presence (state);
 
 	g_signal_connect (item, "activate",
 			  G_CALLBACK (presence_chooser_noncustom_activate_cb),
@@ -808,6 +808,8 @@ presence_chooser_dialog_status_changed_cb (GtkWidget           *widget,
 
 	gtk_combo_box_set_model (GTK_COMBO_BOX (dialog->comboboxentry_message),
 				 GTK_TREE_MODEL (store));
+
+	g_object_unref (store);
 }
 
 static void
@@ -889,8 +891,8 @@ presence_chooser_dialog_setup (CustomMessageDialog *dialog)
 
 		gtk_list_store_append (store, &iter);
 		gtk_list_store_set (store, &iter,
-				    COL_ICON, empathy_icon_name_for_presence_state (states[i]),
-				    COL_LABEL, empathy_presence_state_get_default_status (states[i]),
+				    COL_ICON, empathy_icon_name_for_presence (states[i]),
+				    COL_LABEL, empathy_presence_get_default_message (states[i]),
 				    COL_PRESENCE, states[i],
 				    -1);
 	}
@@ -899,16 +901,27 @@ presence_chooser_dialog_setup (CustomMessageDialog *dialog)
 }
 
 static void
+presence_chooser_dialog_response_cb (GtkWidget           *widget,
+				     gint                 response,
+				     CustomMessageDialog *dialog)
+{
+	if (response == GTK_RESPONSE_APPLY) {
+		McPresence   state;
+		const gchar *text;
+
+		state = presence_chooser_dialog_get_selected (dialog);
+		text = gtk_entry_get_text (GTK_ENTRY (dialog->entry_message));
+
+		presence_chooser_set_state (state, text);
+	}
+
+	gtk_widget_destroy (widget);
+}
+
+static void
 presence_chooser_dialog_destroy_cb (GtkWidget           *widget,
 				    CustomMessageDialog *dialog)
 {
-	McPresence   state;
-	const gchar *text;
-
-	state = presence_chooser_dialog_get_selected (dialog);
-	text = gtk_entry_get_text (GTK_ENTRY (dialog->entry_message));
-
-	presence_chooser_set_state (state, text);
 
 	g_free (dialog);
 	message_dialog = NULL;
@@ -936,7 +949,7 @@ presence_chooser_dialog_show (void)
 	empathy_glade_connect (glade,
 			       message_dialog,
 			       "custom_message_dialog", "destroy", presence_chooser_dialog_destroy_cb,
-			       "custom_message_dialog", "response", gtk_widget_destroy,
+			       "custom_message_dialog", "response", presence_chooser_dialog_response_cb,
 			       "combobox_status", "changed", presence_chooser_dialog_status_changed_cb,
 			       "checkbutton_save", "toggled", presence_chooser_dialog_save_toggled_cb,
 			       NULL);

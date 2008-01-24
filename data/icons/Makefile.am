@@ -17,12 +17,15 @@ private_icons = \
 	hicolor_actions_16x16_im-message-new.png \
 	hicolor_actions_22x22_im-message-new.png \
 	hicolor_actions_24x24_im-message-new.png \
+	hicolor_status_16x16_im-message.png \
+	hicolor_status_16x16_user-typing.png \
 	hicolor_apps_16x16_im-ekiga.png \
 	hicolor_apps_16x16_im-gizmo.png \
 	hicolor_apps_16x16_im-google-talk.png \
 	hicolor_apps_16x16_im-irc.png \
 	hicolor_apps_16x16_im-xmpp.png \
 	hicolor_apps_16x16_im-msn.png \
+	hicolor_apps_16x16_im-sip.png \
 	hicolor_apps_16x16_im-local-xmpp.png \
 	hicolor_apps_22x22_im-ekiga.png \
 	hicolor_apps_22x22_im-gizmo.png \
@@ -30,6 +33,7 @@ private_icons = \
 	hicolor_apps_22x22_im-irc.png \
 	hicolor_apps_22x22_im-xmpp.png \
 	hicolor_apps_22x22_im-msn.png \
+	hicolor_apps_22x22_im-sip.png \
 	hicolor_apps_22x22_im-local-xmpp.png \
 	hicolor_apps_24x24_im-ekiga.png \
 	hicolor_apps_24x24_im-gizmo.png \
@@ -37,6 +41,7 @@ private_icons = \
 	hicolor_apps_24x24_im-irc.png \
 	hicolor_apps_24x24_im-xmpp.png \
 	hicolor_apps_24x24_im-msn.png \
+	hicolor_apps_24x24_im-sip.png \
 	hicolor_apps_24x24_im-local-xmpp.png \
 	hicolor_apps_32x32_im-ekiga.png \
 	hicolor_apps_32x32_im-gizmo.png \
@@ -44,13 +49,23 @@ private_icons = \
 	hicolor_apps_32x32_im-irc.png \
 	hicolor_apps_32x32_im-xmpp.png \
 	hicolor_apps_32x32_im-msn.png \
+	hicolor_apps_32x32_im-sip.png \
 	hicolor_apps_32x32_im-local-xmpp.png \
+	hicolor_apps_48x48_im-ekiga.png \
+	hicolor_apps_48x48_im-gizmo.png \
+	hicolor_apps_48x48_im-google-talk.png \
+	hicolor_apps_48x48_im-irc.png \
+	hicolor_apps_48x48_im-xmpp.png \
+	hicolor_apps_48x48_im-msn.png \
+	hicolor_apps_48x48_im-sip.png \
+	hicolor_apps_48x48_im-local-xmpp.png \
 	hicolor_apps_scalable_im-ekiga.svg \
 	hicolor_apps_scalable_im-gizmo.svg \
 	hicolor_apps_scalable_im-google-talk.svg \
 	hicolor_apps_scalable_im-irc.svg \
 	hicolor_apps_scalable_im-xmpp.svg \
 	hicolor_apps_scalable_im-msn.svg \
+	hicolor_apps_scalable_im-sip.svg \
 	hicolor_apps_scalable_im-local-xmpp.svg \
 	hicolor_status_16x16_empathy-available.png \
 	hicolor_status_16x16_empathy-away.png \
@@ -58,8 +73,6 @@ private_icons = \
 	hicolor_status_16x16_empathy-extended-away.png \
 	hicolor_status_16x16_empathy-offline.png \
 	hicolor_status_16x16_empathy-pending.png \
-	hicolor_status_16x16_im-message.png \
-	hicolor_status_16x16_user-typing.png \
 	hicolor_status_22x22_empathy-available.png \
 	hicolor_status_22x22_empathy-away.png \
 	hicolor_status_22x22_empathy-busy.png \
@@ -72,6 +85,12 @@ private_icons = \
 	hicolor_status_24x24_empathy-extended-away.png \
 	hicolor_status_24x24_empathy-offline.png \
 	hicolor_status_24x24_empathy-pending.png \
+	hicolor_status_32x32_empathy-available.png \
+	hicolor_status_32x32_empathy-away.png \
+	hicolor_status_32x32_empathy-busy.png \
+	hicolor_status_32x32_empathy-extended-away.png \
+	hicolor_status_32x32_empathy-offline.png \
+	hicolor_status_32x32_empathy-pending.png \
 	hicolor_status_48x48_empathy-available.png \
 	hicolor_status_48x48_empathy-away.png \
 	hicolor_status_48x48_empathy-busy.png \
@@ -86,16 +105,9 @@ private_icons = \
 	hicolor_status_scalable_empathy-pending.svg \
 	$(NULL)
 
-noinst_DATA = \
-	hicolor_apps_16x16_im-xmpp.svg \
-	hicolor_apps_22x22_im-xmpp.svg \
-	hicolor_apps_32x32_im-xmpp.svg \
-	$(NULL)
-
 EXTRA_DIST = \
 	$(public_icons)		\
 	$(private_icons)	\
-	$(noinst_DATA)		\
 	$(NULL)
 
 ###############################################################################

@@ -7,10 +7,9 @@ import csv
 import datetime
 from string import Template
 
-prev_tag = 'EMPATHY_0_21_4'
 username = 'xclaesse'
-
-template = '''
+upload_server = 'master.gnome.org'
+template = '''\
 $name $version is now available for download from:
 $download
 
@@ -20,8 +19,6 @@ What is it?
 ===========
 $about
 
-Where can I find out more?
-==========================
 You can visit the project web site:
 $website
 
@@ -29,11 +26,7 @@ What's New?
 ===========
 $news
 
-$footer
-'''
-
-def exec_cmd (cmd):
-	return os.popen(cmd).read()
+$footer'''
 
 class Commit:
 	ref = ''
@@ -41,13 +34,13 @@ class Commit:
 	date = ''
 	message = ''
 	bug = ''
-	summary = ''
 	translation = False
 
 	def parse(self):
-		if self.message[len(self.message) - 1] == ')':
-			p1 = self.message.rfind('(')
-			self.author = self.message[p1+1:len(self.message) - 1]
+		p1 = self.message.rfind('(')
+		p2 = self.message.rfind (')')
+		if len(self.message) - p2 <= 2:
+			self.author = self.message[p1+1:p2]
 			self.message = self.message[:p1]
 
 		p1 = self.message.find('#')
@@ -64,112 +57,14 @@ class Commit:
 	                match = lang_re.match(self.message)
 			if match:
 				lang = match.group('name').strip()				
-				self.summary = "Updated " + lang + " Translation"
-			else:
-				self.summary = self.message
-			self.summary += ' (' + self.author + ').'
+				self.message = "Updated " + lang + " Translation"
+
+		self.message += ' (' + self.author + ').'
 
 		return self.bug
 
 class Project:
-	package_name = ''
-	package_version = ''
-	package_module = ''
-	package_dl_url = ''
-	description = ''
-	url = ''
-	md5sums = ''
-	news = ''
-	translations = ''
-	new_tag = ''
-	notes = ''
-	commits = []
-
 	def __init__(self):
-		self.get_package_info()
-		self.get_new_tag()
-		self.get_bugzilla_info()
-		self.get_md5sums()
-		self.get_news()
-		self.get_commits()
-		self.get_notes()
-
-	def make_tag(self):
-		url1 = exec_cmd('git-config svn-remote.svn.url').strip()
-		url2 = url1[:url1.rfind('/')] + '/tags/' + self.new_tag
-
-		exec_cmd('svn copy %s %s -m "Tagged for release %s."' % (url1, url2, self.package_version))
-		exec_cmd('git-tag -m "Tagged for release %s." %s' % ( self.package_version, self.new_tag))
-
-	def make_news(self):
-		bugs = ''
-		translations = ''
-		others = ''
-		for co in self.commits:
-			if co.summary == '':
-				others += '- ' + co.message + '\n'
-			elif co.translation == False:
-				bugs += '- ' + co.summary + '\n'
-			else :
-				translations += '- ' + co.summary + '\n'
-				
-		news = 'NEW in '+ self.package_version + '\n==============\n' 
-		news += others + '\n' + bugs + '\nTranslations:\n' + translations + '\n'
-
-		f = open ('/tmp/NEWS', 'w')
-		s = f.write(news)
-		f.close()
-
-		exec_cmd('cat NEWS >> /tmp/NEWS')
-		exec_cmd('mv /tmp/NEWS .')
-
-	def upload_tarball(self):
-		# This is the tarball we are going to upload
-		tarball = '%s-%s.tar.gz' % (package_name.lower(), package_version)
-                
-		cmd = 'scp %s %s@%s:' % (tarball, username, upload_server)
-		exec_cmd(cmd)
-                
-		cmd = 'ssh %s@%s install-module %s' % (username, upload_server, tarball)
-		exec_cmd(cmd)
-
-	def get_new_tag(self):
-		self.new_tag = self.package_name.upper() + '_' +\
-			       self.package_version.replace('.', '_')
-
-	def get_notes(self):
-		name = self.package_name
-		version = self.package_version
-		download = self.package_dl_url
-		md5sums = self.md5sums
-		about = self.description
-		website = self.url
-		news = self.news
-		footer = '%s\n%s team' % (datetime.date.today().strftime('%d %B %Y'),\
-					  self.package_name)
-
-		t = Template(template)
-		self.notes = text = t.substitute(locals())
-
-	def get_news(self):
-		f = open ('NEWS', 'r')
-		s = f.read()
-		f.close()
-		start = s.find ('NEW in '+ self.package_version)
-		if start != -1:
-			start = s.find ('\n', start) + 1
-			start = s.find ('\n', start) + 1
-	        	end = s.find ('NEW in', start) - 1
-		        self.news = s[start:end]
-
-	def get_md5sums(self):
-		cmd = 'md5sum %s-%s.tar.gz' % (self.package_name.lower(), self.package_version)
-		self.md5sums += exec_cmd(cmd)
-
-		cmd = 'md5sum %s-%s.tar.bz2' % (self.package_name.lower(), self.package_version)
-		self.md5sums += exec_cmd(cmd)
-
-	def get_package_info(self):
 		f = open('config.h', 'r')
 		s = f.read()
 		f.close()
@@ -201,6 +96,30 @@ class Project:
 			version_dir = self.package_version[:second]
 		self.package_dl_url = 'http://download.gnome.org/sources/%s/%s/' % (self.package_name.lower(), 
 										    version_dir)
+	def exec_cmd(self,cmd):
+		return os.popen(cmd).read()
+
+	def get_news(self):
+		f = open ('NEWS', 'r')
+		s = f.read()
+		f.close()
+		start = s.find ('NEW in '+ self.package_version)
+		if start != -1:
+			start = s.find ('\n', start) + 1
+			start = s.find ('\n', start) + 1
+	        	end = s.find ('NEW in', start) - 1
+		        return s[start:end].strip()
+
+	def get_md5sums(self):
+		md5sums = ''
+
+		cmd = 'md5sum %s-%s.tar.gz' % (self.package_name.lower(), self.package_version)
+		md5sums += self.exec_cmd(cmd)
+
+		cmd = 'md5sum %s-%s.tar.bz2' % (self.package_name.lower(), self.package_version)
+		md5sums += self.exec_cmd(cmd).strip()
+
+		return md5sums
 
 	def get_bugzilla_info(self):
 		query = 'http://bugzilla.gnome.org/browse.cgi?product=%s' % (self.package_module)
@@ -213,7 +132,7 @@ class Project:
 		start = i + len(s1)
 		s2 = '</i></p>'
 		end = s.find(s2, i + 1)
-		self.description = s[start:end]
+		description = s[start:end]
 
 		s1 = "GNOME SVN"
 		i = s.find(s1)
@@ -222,12 +141,36 @@ class Project:
 		start = i + 6
 		s2 = '">'
 		end = s.find(s2, start)
-		self.url = s[start:end]
+		project_url = s[start:end]
+
+		return (description, project_url)
+
+	def get_release_notes(self):
+		name = self.package_name
+		version = self.package_version
+		download = self.package_dl_url
+		md5sums = self.get_md5sums()
+		(about, website) = self.get_bugzilla_info()
+		news = self.get_news()
+		footer = '%s\n%s team' % (datetime.date.today().strftime('%d %B %Y'),\
+					  self.package_name)
+
+		t = Template(template)
+		return t.substitute(locals())
 	
+	def get_last_tag(self):
+		tags_str = self.exec_cmd('git-tag')
+		tags = tags_str.splitlines()
+
+		return tags[len(tags)-1]
+
 	def get_commits(self):
 		bugs = ''
 		co = None
-		changes = exec_cmd ("git-log " + prev_tag + "..")
+		commits = []
+		last_tag = self.get_last_tag()
+
+		changes = self.exec_cmd ("git-log " + last_tag + "..")
         	for line in changes.splitlines(1):
         		if line.startswith('commit'):
         			if co != None:
@@ -238,7 +181,7 @@ class Project:
         					bugs += bug
 
         			co = Commit()
-        			self.commits.append(co)
+        			commits.append(co)
 				p1 = line.find(' ')
 				co.ref = line[p1:].strip()
         		elif line.startswith('Author:'):
@@ -293,9 +236,66 @@ class Project:
 			bug_number = row[col_bug_id]
 			description = row[col_description]
 
-			for co in self.commits:
+			for co in commits:
 				if co.bug == bug_number:
-					co.summary = 'Fixed #%s, %s (%s)' % (co.bug, description, co.author)
+					co.message = 'Fixed #%s, %s (%s)' % (co.bug, description, co.author)
 					break
+		return commits
+
+	def make_tag(self):
+		new_tag = self.package_name.upper() + '_' +\
+			  self.package_version.replace('.', '_')
+
+		url1 = self.exec_cmd('git-config svn-remote.svn.url').strip()
+		url2 = url1[:url1.rfind('/')] + '/tags/' + new_tag
+		self.exec_cmd('svn copy %s %s -m "Tagged for release %s."' % (url1, url2, self.package_version))
+
+		self.exec_cmd('git-tag -m "Tagged for release %s." %s' % ( self.package_version, new_tag))
+
+	def generate_news(self):
+		bugs = ''
+		translations = ''
+		others = ''
+		commits = self.get_commits()
+		for co in commits:
+
+			if co.translation == True:
+				translations += ' - ' + co.message + '\n'
+			elif co.bug != '':
+				bugs += ' - ' + co.message + '\n'
+			else:
+				others += ' - ' + co.message + '\n'
+				
+		news = 'NEW in '+ self.package_version + '\n==============\n' 
+		news += others + '\nBugs fixed:\n' + bugs + '\nTranslations:\n' + translations + '\n'
+
+		return news
+
+	def write_news(self):
+		news = self.generate_news()
+
+		f = open ('/tmp/NEWS', 'w')
+		s = f.write(news)
+		f.close()
+
+		self.exec_cmd('cat NEWS >> /tmp/NEWS')
+		self.exec_cmd('mv /tmp/NEWS .')
+
+	def upload_tarball(self):
+		tarball = '%s-%s.tar.gz' % (self.package_name.lower(), self.package_version)
+
+		cmd = 'scp %s %s@%s:' % (tarball, username, upload_server)
+		self.exec_cmd(cmd)
+
+		cmd = 'ssh %s@%s install-module -u %s' % (username, upload_server, tarball)
+		self.exec_cmd(cmd)
+
+	def release(self):
+		self.make_tag()
+		self.upload_tarball()
+		print self.get_release_notes()
 
 p = Project()
+#print p.generate_news()
+#p.write_news()
+#p.release()

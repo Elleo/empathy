@@ -30,15 +30,16 @@
 #include <libgnomevfs/gnome-vfs-ops.h>
 
 #include <libempathy/empathy-debug.h>
-#include <libempathy/empathy-conf.h>
+
 
 #include "empathy-avatar-chooser.h"
+#include "empathy-conf.h"
 #include "empathy-preferences.h"
 #include "empathy-ui-utils.h"
 
 #define DEBUG_DOMAIN "AvatarChooser"
 
-#define GET_PRIV(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), EMPATHY_AVATAR_CHOOSER_TYPE, EmpathyAvatarChooserPriv))
+#define GET_PRIV(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), EMPATHY_TYPE_AVATAR_CHOOSER, EmpathyAvatarChooserPriv))
 
 #define AVATAR_SIZE_SAVE 96
 #define AVATAR_SIZE_VIEW 64
@@ -529,7 +530,7 @@ avatar_chooser_clicked_cb (GtkWidget            *button,
 GtkWidget *
 empathy_avatar_chooser_new (void)
 {
-	return g_object_new (EMPATHY_AVATAR_CHOOSER_TYPE, NULL);
+	return g_object_new (EMPATHY_TYPE_AVATAR_CHOOSER, NULL);
 }
 
 void

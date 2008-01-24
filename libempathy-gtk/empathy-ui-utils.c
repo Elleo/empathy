@@ -28,6 +28,8 @@
  *          Jeroen Zwartepoorte
  */
 
+#include <config.h>
+
 #include <string.h>
 #include <X11/Xatom.h>
 #include <gdk/gdkx.h>
@@ -63,7 +65,13 @@ get_glade_file (const gchar *filename,
 	const char *name;
 	GtkWidget **widget_ptr;
 
-	path = g_build_filename (DATADIR, "empathy", filename, NULL);
+	path = g_build_filename (UNINSTALLED_GLADE_DIR, filename, NULL);
+	if (!g_file_test (path, G_FILE_TEST_EXISTS)) {
+		g_free (path);
+		path = g_build_filename (DATADIR, "empathy", filename, NULL);
+	}
+	empathy_debug (DEBUG_DOMAIN, "Loading glade file %s", path);
+
 	gui = glade_xml_new (path, root, domain);
 	g_free (path);
 
@@ -212,9 +220,9 @@ empathy_icon_name_from_account (McAccount *account)
 }
 
 const gchar *
-empathy_icon_name_for_presence_state (McPresence state)
+empathy_icon_name_for_presence (McPresence presence)
 {
-	switch (state) {
+	switch (presence) {
 	case MC_PRESENCE_AVAILABLE:
 		return EMPATHY_IMAGE_AVAILABLE;
 	case MC_PRESENCE_DO_NOT_DISTURB:
@@ -236,32 +244,15 @@ empathy_icon_name_for_presence_state (McPresence state)
 }
 
 const gchar *
-empathy_icon_name_for_presence (EmpathyPresence *presence)
-{
-	McPresence state;
-
-	g_return_val_if_fail (EMPATHY_IS_PRESENCE (presence),
-			      EMPATHY_IMAGE_OFFLINE);
-
-	state = empathy_presence_get_state (presence);
-
-	return empathy_icon_name_for_presence_state (state);
-}
-
-const gchar *
 empathy_icon_name_for_contact (EmpathyContact *contact)
 {
-	EmpathyPresence *presence;
+	McPresence presence;
 
 	g_return_val_if_fail (EMPATHY_IS_CONTACT (contact),
 			      EMPATHY_IMAGE_OFFLINE);
 
 	presence = empathy_contact_get_presence (contact);
-	if (presence) {
-		return empathy_icon_name_for_presence (presence);
-	}
-
-	return EMPATHY_IMAGE_UNKNOWN;
+	return empathy_icon_name_for_presence (presence);
 }
 
 GdkPixbuf *

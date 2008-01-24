@@ -34,9 +34,8 @@
 
 #include <telepathy-glib/util.h>
 
-#include <libempathy/empathy-debug.h>
-#include <libempathy/empathy-utils.h>
-
+#include "empathy-debug.h"
+#include "empathy-utils.h"
 #include "empathy-status-presets.h"
 
 #define DEBUG_DOMAIN "StatusPresets"
@@ -131,7 +130,7 @@ status_presets_file_parse (const gchar *filename)
 			state_str = (gchar *) xmlGetProp (node, "presence");
 
 			if (state_str) {
-				state = empathy_presence_state_from_str (state_str);
+				state = empathy_presence_from_str (state_str);
 
 				if (is_default) {
 					empathy_debug (DEBUG_DOMAIN,
@@ -216,7 +215,7 @@ status_presets_file_save (void)
 		xmlNodePtr  subnode;
 		xmlChar    *state;
 
-		state = (gchar*) empathy_presence_state_to_str (default_preset->state);
+		state = (gchar*) empathy_presence_to_str (default_preset->state);
 
 		subnode = xmlNewTextChild (root, NULL, "default",
 					   default_preset->status);
@@ -229,7 +228,7 @@ status_presets_file_save (void)
 		xmlChar      *state;
 
 		sp = l->data;
-		state = (gchar*) empathy_presence_state_to_str (sp->state);
+		state = (gchar*) empathy_presence_to_str (sp->state);
 
 		count[sp->state]++;
 		if (count[sp->state] > STATUS_PRESETS_MAX_EACH) {

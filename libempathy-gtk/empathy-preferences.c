@@ -30,8 +30,7 @@
 #include <glade/glade.h>
 #include <glib/gi18n.h>
 
-#include <libempathy/empathy-conf.h>
-
+#include "empathy-conf.h"
 #include "empathy-preferences.h"
 #include "empathy-ui-utils.h"
 #include "empathy-theme-manager.h"
@@ -50,6 +49,7 @@ typedef struct {
 	GtkWidget *combobox_chat_theme;
 	GtkWidget *checkbutton_theme_chat_room;
 	GtkWidget *checkbutton_separate_chat_windows;
+	GtkWidget *checkbutton_autoconnect;
 	GtkWidget *radiobutton_contact_list_sort_by_name;
 	GtkWidget *radiobutton_contact_list_sort_by_state;
 
@@ -200,6 +200,10 @@ preferences_setup_widgets (EmpathyPreferences *preferences)
 	preferences_hookup_radio_button (preferences,
 					 EMPATHY_PREFS_CONTACTS_SORT_CRITERIUM,
 					 preferences->radiobutton_contact_list_sort_by_name);
+
+	preferences_hookup_toggle_button (preferences,
+					  EMPATHY_PREFS_AUTOCONNECT,
+					  preferences->checkbutton_autoconnect);
 }
 
 static void
@@ -939,6 +943,7 @@ empathy_preferences_show (GtkWindow *parent)
 		"combobox_chat_theme", &preferences->combobox_chat_theme,
 		"checkbutton_theme_chat_room", &preferences->checkbutton_theme_chat_room,
 		"checkbutton_separate_chat_windows", &preferences->checkbutton_separate_chat_windows,
+		"checkbutton_autoconnect", &preferences->checkbutton_autoconnect,
 		"radiobutton_contact_list_sort_by_name", &preferences->radiobutton_contact_list_sort_by_name,
 		"radiobutton_contact_list_sort_by_state", &preferences->radiobutton_contact_list_sort_by_state,
 		"checkbutton_sounds_for_messages", &preferences->checkbutton_sounds_for_messages,

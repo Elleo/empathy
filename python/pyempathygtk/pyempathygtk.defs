@@ -7,6 +7,27 @@
   (gtype-id "EMPATHY_TYPE_ACCOUNT_CHOOSER")
 )
 
+(define-object AvatarChooser
+  (in-module "Empathy")
+  (parent "GtkButton")
+  (c-name "EmpathyAvatarChooser")
+  (gtype-id "EMPATHY_TYPE_AVATAR_CHOOSER")
+)
+
+(define-object AvatarImage
+  (in-module "Empathy")
+  (parent "GtkEventBox")
+  (c-name "EmpathyAvatarImage")
+  (gtype-id "EMPATHY_TYPE_AVATAR_IMAGE")
+)
+
+(define-object CellRendererActivatable
+  (in-module "Empathy")
+  (parent "GtkCellRendererPixbuf")
+  (c-name "EmpathyCellRendererActivatable")
+  (gtype-id "EMPATHY_TYPE_CELL_RENDERER_ACTIVATABLE")
+)
+
 (define-object CellRendererExpander
   (in-module "Empathy")
   (parent "GtkCellRenderer")
@@ -40,6 +61,13 @@
   (parent "GObject")
   (c-name "EmpathyChatWindow")
   (gtype-id "EMPATHY_TYPE_CHAT_WINDOW")
+)
+
+(define-object Conf
+  (in-module "Empathy")
+  (parent "GObject")
+  (c-name "EmpathyConf")
+  (gtype-id "EMPATHY_TYPE_CONF")
 )
 
 (define-object ContactListStore
@@ -91,6 +119,27 @@
   (gtype-id "EMPATHY_TYPE_STATUS_ICON")
 )
 
+(define-object Theme
+  (in-module "Empathy")
+  (parent "GObject")
+  (c-name "EmpathyTheme")
+  (gtype-id "EMPATHY_TYPE_THEME")
+)
+
+(define-object ThemeBoxes
+  (in-module "Empathy")
+  (parent "EmpathyTheme")
+  (c-name "EmpathyThemeBoxes")
+  (gtype-id "EMPATHY_TYPE_THEME_BOXES")
+)
+
+(define-object ThemeIrc
+  (in-module "Empathy")
+  (parent "EmpathyTheme")
+  (c-name "EmpathyThemeIrc")
+  (gtype-id "EMPATHY_TYPE_THEME_IRC")
+)
+
 (define-object ThemeManager
   (in-module "Empathy")
   (parent "GObject")
@@ -107,6 +156,20 @@
 
 ;; Enumerations and flags ...
 
+(define-enum ChatViewBlock
+  (in-module "Empathy")
+  (c-name "EmpathyChatViewBlock")
+  (gtype-id "EMPATHY_TYPE_CHAT_VIEW_BLOCK")
+  (values
+    '("none" "EMPATHY_CHAT_VIEW_BLOCK_NONE")
+    '("self" "EMPATHY_CHAT_VIEW_BLOCK_SELF")
+    '("other" "EMPATHY_CHAT_VIEW_BLOCK_OTHER")
+    '("event" "EMPATHY_CHAT_VIEW_BLOCK_EVENT")
+    '("time" "EMPATHY_CHAT_VIEW_BLOCK_TIME")
+    '("invite" "EMPATHY_CHAT_VIEW_BLOCK_INVITE")
+  )
+)
+
 (define-enum ContactListStoreSort
   (in-module "Empathy")
   (c-name "EmpathyContactListStoreSort")
@@ -122,30 +185,56 @@
   (c-name "EmpathyContactListStoreCol")
   (gtype-id "EMPATHY_TYPE_CONTACT_LIST_STORE_COL")
   (values
-    '("icon-status" "COL_ICON_STATUS")
-    '("pixbuf-avatar" "COL_PIXBUF_AVATAR")
-    '("pixbuf-avatar-visible" "COL_PIXBUF_AVATAR_VISIBLE")
-    '("name" "COL_NAME")
-    '("status" "COL_STATUS")
-    '("status-visible" "COL_STATUS_VISIBLE")
-    '("contact" "COL_CONTACT")
-    '("is-group" "COL_IS_GROUP")
-    '("is-active" "COL_IS_ACTIVE")
-    '("is-online" "COL_IS_ONLINE")
-    '("is-separator" "COL_IS_SEPARATOR")
-    '("count" "COL_COUNT")
+    '("icon-status" "EMPATHY_CONTACT_LIST_STORE_COL_ICON_STATUS")
+    '("pixbuf-avatar" "EMPATHY_CONTACT_LIST_STORE_COL_PIXBUF_AVATAR")
+    '("pixbuf-avatar-visible" "EMPATHY_CONTACT_LIST_STORE_COL_PIXBUF_AVATAR_VISIBLE")
+    '("name" "EMPATHY_CONTACT_LIST_STORE_COL_NAME")
+    '("status" "EMPATHY_CONTACT_LIST_STORE_COL_STATUS")
+    '("status-visible" "EMPATHY_CONTACT_LIST_STORE_COL_STATUS_VISIBLE")
+    '("contact" "EMPATHY_CONTACT_LIST_STORE_COL_CONTACT")
+    '("is-group" "EMPATHY_CONTACT_LIST_STORE_COL_IS_GROUP")
+    '("is-active" "EMPATHY_CONTACT_LIST_STORE_COL_IS_ACTIVE")
+    '("is-online" "EMPATHY_CONTACT_LIST_STORE_COL_IS_ONLINE")
+    '("is-separator" "EMPATHY_CONTACT_LIST_STORE_COL_IS_SEPARATOR")
+    '("can-voip" "EMPATHY_CONTACT_LIST_STORE_COL_CAN_VOIP")
+    '("count" "EMPATHY_CONTACT_LIST_STORE_COL_COUNT")
   )
 )
 
-(define-enum ContactWidgetType
+(define-flags ContactListFeatures
   (in-module "Empathy")
-  (c-name "EmpathyContactWidgetType")
-  (gtype-id "EMPATHY_TYPE_CONTACT_WIDGET_TYPE")
+  (c-name "EmpathyContactListFeatures")
+  (gtype-id "EMPATHY_TYPE_CONTACT_LIST_FEATURES")
   (values
-    '("show" "CONTACT_WIDGET_TYPE_SHOW")
-    '("edit" "CONTACT_WIDGET_TYPE_EDIT")
-    '("add" "CONTACT_WIDGET_TYPE_ADD")
-    '("subscription" "CONTACT_WIDGET_TYPE_SUBSCRIPTION")
+    '("none" "EMPATHY_CONTACT_LIST_FEATURE_NONE")
+    '("groups-save" "EMPATHY_CONTACT_LIST_FEATURE_GROUPS_SAVE")
+    '("groups-rename" "EMPATHY_CONTACT_LIST_FEATURE_GROUPS_RENAME")
+    '("groups-remove" "EMPATHY_CONTACT_LIST_FEATURE_GROUPS_REMOVE")
+    '("contact-chat" "EMPATHY_CONTACT_LIST_FEATURE_CONTACT_CHAT")
+    '("contact-call" "EMPATHY_CONTACT_LIST_FEATURE_CONTACT_CALL")
+    '("contact-log" "EMPATHY_CONTACT_LIST_FEATURE_CONTACT_LOG")
+    '("contact-ft" "EMPATHY_CONTACT_LIST_FEATURE_CONTACT_FT")
+    '("contact-invite" "EMPATHY_CONTACT_LIST_FEATURE_CONTACT_INVITE")
+    '("contact-edit" "EMPATHY_CONTACT_LIST_FEATURE_CONTACT_EDIT")
+    '("contact-info" "EMPATHY_CONTACT_LIST_FEATURE_CONTACT_INFO")
+    '("contact-remove" "EMPATHY_CONTACT_LIST_FEATURE_CONTACT_REMOVE")
+    '("contact-drop" "EMPATHY_CONTACT_LIST_FEATURE_CONTACT_DROP")
+    '("contact-drag" "EMPATHY_CONTACT_LIST_FEATURE_CONTACT_DRAG")
+    '("all" "EMPATHY_CONTACT_LIST_FEATURE_ALL")
+  )
+)
+
+(define-flags ContactWidgetFlags
+  (in-module "Empathy")
+  (c-name "EmpathyContactWidgetFlags")
+  (gtype-id "EMPATHY_TYPE_CONTACT_WIDGET_FLAGS")
+  (values
+    '("none" "EMPATHY_CONTACT_WIDGET_EDIT_NONE")
+    '("alias" "EMPATHY_CONTACT_WIDGET_EDIT_ALIAS")
+    '("avatar" "EMPATHY_CONTACT_WIDGET_EDIT_AVATAR")
+    '("account" "EMPATHY_CONTACT_WIDGET_EDIT_ACCOUNT")
+    '("id" "EMPATHY_CONTACT_WIDGET_EDIT_ID")
+    '("groups" "EMPATHY_CONTACT_WIDGET_EDIT_GROUPS")
   )
 )
 
@@ -286,6 +375,92 @@
   (parameters
     '("McAccount*" "account")
   )
+)
+
+
+
+;; From empathy-avatar-chooser.h
+
+(define-function empathy_avatar_chooser_get_type
+  (c-name "empathy_avatar_chooser_get_type")
+  (return-type "GType")
+)
+
+(define-function empathy_avatar_chooser_new
+  (c-name "empathy_avatar_chooser_new")
+  (is-constructor-of "EmpathyAvatarChooser")
+  (return-type "GtkWidget*")
+)
+
+(define-method set
+  (of-object "EmpathyAvatarChooser")
+  (c-name "empathy_avatar_chooser_set")
+  (return-type "none")
+  (parameters
+    '("EmpathyAvatar*" "avatar")
+  )
+)
+
+(define-method get_image_data
+  (of-object "EmpathyAvatarChooser")
+  (c-name "empathy_avatar_chooser_get_image_data")
+  (return-type "none")
+  (parameters
+    '("const-gchar**" "data")
+    '("gsize*" "data_size")
+    '("const-gchar**" "mime_type")
+  )
+)
+
+
+
+;; From empathy-avatar-image.h
+
+(define-function empathy_avatar_image_get_type
+  (c-name "empathy_avatar_image_get_type")
+  (return-type "GType")
+)
+
+(define-function empathy_avatar_image_new
+  (c-name "empathy_avatar_image_new")
+  (is-constructor-of "EmpathyAvatarImage")
+  (return-type "GtkWidget*")
+)
+
+(define-method set
+  (of-object "EmpathyAvatarImage")
+  (c-name "empathy_avatar_image_set")
+  (return-type "none")
+  (parameters
+    '("EmpathyAvatar*" "avatar")
+  )
+)
+
+
+
+;; From empathy-call-window.h
+
+(define-function empathy_call_window_show
+  (c-name "empathy_call_window_show")
+  (return-type "GtkWidget*")
+  (parameters
+    '("EmpathyTpCall*" "call")
+  )
+)
+
+
+
+;; From empathy-cell-renderer-activatable.h
+
+(define-function empathy_cell_renderer_activatable_get_type
+  (c-name "empathy_cell_renderer_activatable_get_type")
+  (return-type "GType")
+)
+
+(define-function empathy_cell_renderer_activatable_new
+  (c-name "empathy_cell_renderer_activatable_new")
+  (is-constructor-of "EmpathyCellRendererActivatable")
+  (return-type "GtkCellRenderer*")
 )
 
 
@@ -457,6 +632,12 @@
   (of-object "EmpathyChat")
   (c-name "empathy_chat_get_id")
   (return-type "const-gchar*")
+)
+
+(define-method get_account
+  (of-object "EmpathyChat")
+  (c-name "empathy_chat_get_account")
+  (return-type "McAccount*")
 )
 
 (define-function empathy_chat_get_is_command
@@ -634,18 +815,18 @@
   (return-type "none")
 )
 
-(define-method get_irc_style
+(define-method get_theme
   (of-object "EmpathyChatView")
-  (c-name "empathy_chat_view_get_irc_style")
-  (return-type "gboolean")
+  (c-name "empathy_chat_view_get_theme")
+  (return-type "EmpathyTheme*")
 )
 
-(define-method set_irc_style
+(define-method set_theme
   (of-object "EmpathyChatView")
-  (c-name "empathy_chat_view_set_irc_style")
+  (c-name "empathy_chat_view_set_theme")
   (return-type "none")
   (parameters
-    '("gboolean" "irc_style")
+    '("EmpathyTheme*" "theme")
   )
 )
 
@@ -664,7 +845,6 @@
   (parameters
     '("GCallback" "callback")
     '("gpointer" "user_data")
-    '("GtkTooltips*" "tooltips")
   )
 )
 
@@ -674,6 +854,59 @@
   (return-type "none")
   (parameters
     '("gboolean" "is_group_chat")
+  )
+)
+
+(define-method get_last_timestamp
+  (of-object "EmpathyChatView")
+  (c-name "empathy_chat_view_get_last_timestamp")
+  (return-type "time_t")
+)
+
+(define-method set_last_timestamp
+  (of-object "EmpathyChatView")
+  (c-name "empathy_chat_view_set_last_timestamp")
+  (return-type "none")
+  (parameters
+    '("time_t" "timestamp")
+  )
+)
+
+(define-method get_last_block_type
+  (of-object "EmpathyChatView")
+  (c-name "empathy_chat_view_get_last_block_type")
+  (return-type "EmpathyChatViewBlock")
+)
+
+(define-method set_last_block_type
+  (of-object "EmpathyChatView")
+  (c-name "empathy_chat_view_set_last_block_type")
+  (return-type "none")
+  (parameters
+    '("EmpathyChatViewBlock" "block_type")
+  )
+)
+
+(define-method get_last_contact
+  (of-object "EmpathyChatView")
+  (c-name "empathy_chat_view_get_last_contact")
+  (return-type "EmpathyContact*")
+)
+
+(define-method set_last_contact
+  (of-object "EmpathyChatView")
+  (c-name "empathy_chat_view_set_last_contact")
+  (return-type "none")
+  (parameters
+    '("EmpathyContact*" "contact")
+  )
+)
+
+(define-function empathy_chat_view_get_avatar_pixbuf_with_cache
+  (c-name "empathy_chat_view_get_avatar_pixbuf_with_cache")
+  (return-type "GdkPixbuf*")
+  (parameters
+    '("EmpathyContact*" "contact")
   )
 )
 
@@ -757,6 +990,125 @@
 
 
 
+;; From empathy-conf.h
+
+(define-function empathy_conf_get_type
+  (c-name "empathy_conf_get_type")
+  (return-type "GType")
+)
+
+(define-function empathy_conf_get
+  (c-name "empathy_conf_get")
+  (return-type "EmpathyConf*")
+)
+
+(define-function empathy_conf_shutdown
+  (c-name "empathy_conf_shutdown")
+  (return-type "none")
+)
+
+(define-method notify_add
+  (of-object "EmpathyConf")
+  (c-name "empathy_conf_notify_add")
+  (return-type "guint")
+  (parameters
+    '("const-gchar*" "key")
+    '("EmpathyConfNotifyFunc" "func")
+    '("gpointer" "data")
+  )
+)
+
+(define-method notify_remove
+  (of-object "EmpathyConf")
+  (c-name "empathy_conf_notify_remove")
+  (return-type "gboolean")
+  (parameters
+    '("guint" "id")
+  )
+)
+
+(define-method set_int
+  (of-object "EmpathyConf")
+  (c-name "empathy_conf_set_int")
+  (return-type "gboolean")
+  (parameters
+    '("const-gchar*" "key")
+    '("gint" "value")
+  )
+)
+
+(define-method get_int
+  (of-object "EmpathyConf")
+  (c-name "empathy_conf_get_int")
+  (return-type "gboolean")
+  (parameters
+    '("const-gchar*" "key")
+    '("gint*" "value")
+  )
+)
+
+(define-method set_bool
+  (of-object "EmpathyConf")
+  (c-name "empathy_conf_set_bool")
+  (return-type "gboolean")
+  (parameters
+    '("const-gchar*" "key")
+    '("gboolean" "value")
+  )
+)
+
+(define-method get_bool
+  (of-object "EmpathyConf")
+  (c-name "empathy_conf_get_bool")
+  (return-type "gboolean")
+  (parameters
+    '("const-gchar*" "key")
+    '("gboolean*" "value")
+  )
+)
+
+(define-method set_string
+  (of-object "EmpathyConf")
+  (c-name "empathy_conf_set_string")
+  (return-type "gboolean")
+  (parameters
+    '("const-gchar*" "key")
+    '("const-gchar*" "value")
+  )
+)
+
+(define-method get_string
+  (of-object "EmpathyConf")
+  (c-name "empathy_conf_get_string")
+  (return-type "gboolean")
+  (parameters
+    '("const-gchar*" "key")
+    '("gchar**" "value")
+  )
+)
+
+(define-method set_string_list
+  (of-object "EmpathyConf")
+  (c-name "empathy_conf_set_string_list")
+  (return-type "gboolean")
+  (parameters
+    '("const-gchar*" "key")
+    '("GSList*" "value")
+  )
+)
+
+(define-method get_string_list
+  (of-object "EmpathyConf")
+  (c-name "empathy_conf_get_string_list")
+  (return-type "gboolean")
+  (parameters
+    '("const-gchar*" "key")
+    '("GSList**" "value")
+  )
+)
+
+
+
 ;; From empathy-contact-dialogs.h
 
 (define-function empathy_subscription_dialog_show
@@ -775,6 +1127,7 @@
   (parameters
     '("GtkWindow*" "parent")
     '("gboolean" "edit")
+    '("gboolean" "is_user")
   )
 )
 
@@ -783,32 +1136,6 @@
   (return-type "none")
   (parameters
     '("GtkWindow*" "parent")
-  )
-)
-
-
-
-;; From empathy-contact-groups.h
-
-(define-function empathy_contact_groups_get_all
-  (c-name "empathy_contact_groups_get_all")
-  (return-type "none")
-)
-
-(define-function empathy_contact_group_get_expanded
-  (c-name "empathy_contact_group_get_expanded")
-  (return-type "gboolean")
-  (parameters
-    '("const-gchar*" "group")
-  )
-)
-
-(define-function empathy_contact_group_set_expanded
-  (c-name "empathy_contact_group_set_expanded")
-  (return-type "none")
-  (parameters
-    '("const-gchar*" "group")
-    '("gboolean" "expanded")
   )
 )
 
@@ -860,6 +1187,21 @@
   (return-type "none")
   (parameters
     '("gboolean" "show_avatars")
+  )
+)
+
+(define-method get_show_groups
+  (of-object "EmpathyContactListStore")
+  (c-name "empathy_contact_list_store_get_show_groups")
+  (return-type "gboolean")
+)
+
+(define-method set_show_groups
+  (of-object "EmpathyContactListStore")
+  (c-name "empathy_contact_list_store_set_show_groups")
+  (return-type "none")
+  (parameters
+    '("gboolean" "show_groups")
   )
 )
 
@@ -940,7 +1282,23 @@
   (return-type "EmpathyContactListView*")
   (parameters
     '("EmpathyContactListStore*" "store")
+    '("EmpathyContactListFeatures" "features")
   )
+)
+
+(define-method set_features
+  (of-object "EmpathyContactListView")
+  (c-name "empathy_contact_list_view_set_features")
+  (return-type "none")
+  (parameters
+    '("EmpathyContactListFeatures" "features")
+  )
+)
+
+(define-method get_features
+  (of-object "EmpathyContactListView")
+  (c-name "empathy_contact_list_view_get_features")
+  (return-type "EmpathyContactListFeatures")
 )
 
 (define-method get_selected
@@ -979,7 +1337,7 @@
   (c-name "empathy_contact_widget_new")
   (return-type "GtkWidget*")
   (parameters
-    '("EmpathyContactWidgetType" "type")
+    '("EmpathyContactWidgetFlags" "flags")
   )
 )
 
@@ -988,6 +1346,25 @@
   (return-type "EmpathyContact*")
   (parameters
     '("GtkWidget*" "widget")
+  )
+)
+
+(define-function empathy_contact_widget_set_contact
+  (c-name "empathy_contact_widget_set_contact")
+  (return-type "none")
+  (parameters
+    '("GtkWidget*" "widget")
+    '("EmpathyContact*" "contact")
+  )
+)
+
+(define-function empathy_contact_widget_set_account_filter
+  (c-name "empathy_contact_widget_set_account_filter")
+  (return-type "none")
+  (parameters
+    '("GtkWidget*" "widget")
+    '("EmpathyAccountChooserFilterFunc" "filter")
+    '("gpointer" "user_data")
   )
 )
 
@@ -1033,8 +1410,7 @@
   (is-constructor-of "EmpathyGroupChat")
   (return-type "EmpathyGroupChat*")
   (parameters
-    '("McAccount*" "account")
-    '("TpChan*" "tp_chan")
+    '("EmpathyTpChatroom*" "tp_chat")
   )
 )
 
@@ -1069,7 +1445,7 @@
 
 (define-function empathy_log_window_show
   (c-name "empathy_log_window_show")
-  (return-type "none")
+  (return-type "GtkWidget*")
   (parameters
     '("McAccount*" "account")
     '("const-gchar*" "chat_id")
@@ -1094,6 +1470,18 @@
 (define-function empathy_new_chatroom_dialog_show
   (c-name "empathy_new_chatroom_dialog_show")
   (return-type "none")
+  (parameters
+    '("GtkWindow*" "parent")
+  )
+)
+
+
+
+;; From empathy-new-message-dialog.h
+
+(define-function empathy_new_message_dialog_show
+  (c-name "empathy_new_message_dialog_show")
+  (return-type "GtkWidget*")
   (parameters
     '("GtkWindow*" "parent")
   )
@@ -1145,8 +1533,7 @@
   (is-constructor-of "EmpathyPrivateChat")
   (return-type "EmpathyPrivateChat*")
   (parameters
-    '("McAccount*" "account")
-    '("TpChan*" "tp_chan")
+    '("EmpathyTpChat*" "tp_chat")
   )
 )
 
@@ -1169,6 +1556,14 @@
 (define-function empathy_profile_chooser_get_selected
   (c-name "empathy_profile_chooser_get_selected")
   (return-type "McProfile*")
+  (parameters
+    '("GtkWidget*" "widget")
+  )
+)
+
+(define-function empathy_profile_chooser_n_profiles
+  (c-name "empathy_profile_chooser_n_profiles")
+  (return-type "gint")
   (parameters
     '("GtkWidget*" "widget")
   )
@@ -1327,67 +1722,116 @@
 
 
 
-;; From empathy-status-presets.h
+;; From empathy-theme-boxes.h
 
-(define-function empathy_status_presets_get_all
-  (c-name "empathy_status_presets_get_all")
-  (return-type "none")
+(define-function empathy_theme_boxes_get_type
+  (c-name "empathy_theme_boxes_get_type")
+  (return-type "GType")
 )
 
-(define-function empathy_status_presets_get
-  (c-name "empathy_status_presets_get")
-  (return-type "GList*")
+
+
+;; From empathy-theme.h
+
+(define-function empathy_theme_get_type
+  (c-name "empathy_theme_get_type")
+  (return-type "GType")
+)
+
+(define-method update_view
+  (of-object "EmpathyTheme")
+  (c-name "empathy_theme_update_view")
+  (return-type "none")
   (parameters
-    '("McPresence" "state")
-    '("gint" "max_number")
+    '("EmpathyChatView*" "view")
   )
 )
 
-(define-function empathy_status_presets_set_last
-  (c-name "empathy_status_presets_set_last")
+(define-method append_message
+  (of-object "EmpathyTheme")
+  (c-name "empathy_theme_append_message")
   (return-type "none")
   (parameters
-    '("McPresence" "state")
-    '("const-gchar*" "status")
+    '("EmpathyChatView*" "view")
+    '("EmpathyMessage*" "msg")
   )
 )
 
-(define-function empathy_status_presets_remove
-  (c-name "empathy_status_presets_remove")
+(define-method append_text
+  (of-object "EmpathyTheme")
+  (c-name "empathy_theme_append_text")
   (return-type "none")
   (parameters
-    '("McPresence" "state")
-    '("const-gchar*" "status")
+    '("EmpathyChatView*" "view")
+    '("const-gchar*" "body")
+    '("const-gchar*" "tag")
+    '("const-gchar*" "link_tag")
   )
 )
 
-(define-function empathy_status_presets_reset
-  (c-name "empathy_status_presets_reset")
-  (return-type "none")
-)
-
-(define-function empathy_status_presets_get_default_state
-  (c-name "empathy_status_presets_get_default_state")
-  (return-type "McPresence")
-)
-
-(define-function empathy_status_presets_get_default_status
-  (c-name "empathy_status_presets_get_default_status")
-  (return-type "const-gchar*")
-)
-
-(define-function empathy_status_presets_set_default
-  (c-name "empathy_status_presets_set_default")
+(define-method append_spacing
+  (of-object "EmpathyTheme")
+  (c-name "empathy_theme_append_spacing")
   (return-type "none")
   (parameters
-    '("McPresence" "state")
-    '("const-gchar*" "status")
+    '("EmpathyChatView*" "view")
   )
 )
 
-(define-function empathy_status_presets_clear_default
-  (c-name "empathy_status_presets_clear_default")
+(define-method append_event
+  (of-object "EmpathyTheme")
+  (c-name "empathy_theme_append_event")
   (return-type "none")
+  (parameters
+    '("EmpathyChatView*" "view")
+    '("const-gchar*" "str")
+  )
+)
+
+(define-method append_timestamp
+  (of-object "EmpathyTheme")
+  (c-name "empathy_theme_append_timestamp")
+  (return-type "none")
+  (parameters
+    '("EmpathyChatView*" "view")
+    '("EmpathyMessage*" "message")
+    '("gboolean" "show_date")
+    '("gboolean" "show_time")
+  )
+)
+
+(define-method maybe_append_date_and_time
+  (of-object "EmpathyTheme")
+  (c-name "empathy_theme_maybe_append_date_and_time")
+  (return-type "none")
+  (parameters
+    '("EmpathyChatView*" "view")
+    '("EmpathyMessage*" "message")
+  )
+)
+
+(define-method get_show_avatars
+  (of-object "EmpathyTheme")
+  (c-name "empathy_theme_get_show_avatars")
+  (return-type "gboolean")
+)
+
+(define-method set_show_avatars
+  (of-object "EmpathyTheme")
+  (c-name "empathy_theme_set_show_avatars")
+  (return-type "none")
+  (parameters
+    '("gboolean" "show")
+  )
+)
+
+
+
+;; From empathy-theme-irc.h
+
+(define-function empathy_theme_irc_get_type
+  (c-name "empathy_theme_irc_get_type")
+  (return-type "GType")
 )
 
 
@@ -1425,16 +1869,6 @@
   (return-type "none")
   (parameters
     '("EmpathyChatView*" "view")
-  )
-)
-
-(define-method update_show_avatars
-  (of-object "EmpathyThemeManager")
-  (c-name "empathy_theme_manager_update_show_avatars")
-  (return-type "none")
-  (parameters
-    '("EmpathyChatView*" "view")
-    '("gboolean" "show")
   )
 )
 
@@ -1488,15 +1922,6 @@
   (varargs #t)
 )
 
-(define-function empathy_pixbuf_from_icon_name
-  (c-name "empathy_pixbuf_from_icon_name")
-  (return-type "GdkPixbuf*")
-  (parameters
-    '("const-gchar*" "icon_name")
-    '("GtkIconSize" "icon_size")
-  )
-)
-
 (define-function empathy_icon_name_from_account
   (c-name "empathy_icon_name_from_account")
   (return-type "const-gchar*")
@@ -1505,19 +1930,11 @@
   )
 )
 
-(define-function empathy_icon_name_for_presence_state
-  (c-name "empathy_icon_name_for_presence_state")
-  (return-type "const-gchar*")
-  (parameters
-    '("McPresence" "state")
-  )
-)
-
 (define-function empathy_icon_name_for_presence
   (c-name "empathy_icon_name_for_presence")
   (return-type "const-gchar*")
   (parameters
-    '("EmpathyPresence*" "presence")
+    '("McPresence" "presence")
   )
 )
 
@@ -1526,6 +1943,15 @@
   (return-type "const-gchar*")
   (parameters
     '("EmpathyContact*" "contact")
+  )
+)
+
+(define-function empathy_pixbuf_from_data
+  (c-name "empathy_pixbuf_from_data")
+  (return-type "GdkPixbuf*")
+  (parameters
+    '("gchar*" "data")
+    '("gsize" "data_size")
   )
 )
 
@@ -1546,6 +1972,24 @@
     '("EmpathyContact*" "contact")
     '("gint" "width")
     '("gint" "height")
+  )
+)
+
+(define-function empathy_pixbuf_scale_down_if_necessary
+  (c-name "empathy_pixbuf_scale_down_if_necessary")
+  (return-type "GdkPixbuf*")
+  (parameters
+    '("GdkPixbuf*" "pixbuf")
+    '("gint" "max_size")
+  )
+)
+
+(define-function empathy_pixbuf_from_icon_name
+  (c-name "empathy_pixbuf_from_icon_name")
+  (return-type "GdkPixbuf*")
+  (parameters
+    '("const-gchar*" "icon_name")
+    '("GtkIconSize" "icon_size")
   )
 )
 
@@ -1634,6 +2078,17 @@
     '("const-gchar*" "url")
     '("const-gchar*" "title")
   )
+)
+
+(define-function empathy_text_buffer_tag_set
+  (c-name "empathy_text_buffer_tag_set")
+  (return-type "GtkTextTag*")
+  (parameters
+    '("GtkTextBuffer*" "buffer")
+    '("const-gchar*" "tag_name")
+    '("const-gchar*" "first_property_name")
+  )
+  (varargs #t)
 )
 
 

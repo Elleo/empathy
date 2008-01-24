@@ -31,9 +31,12 @@
 #include <libmissioncontrol/mc-profile.h>
 
 #include <libempathy/empathy-utils.h>
+#include <libempathy/empathy-debug.h>
 
 #include "empathy-account-widget-salut.h"
 #include "empathy-ui-utils.h"
+
+#define DEBUG_DOMAIN "AccountWidgetMSN"
 
 typedef struct {
 	McAccount *account;
@@ -46,15 +49,6 @@ typedef struct {
 	GtkWidget *entry_email;
 	GtkWidget *entry_jid;
 } EmpathyAccountWidgetSalut;
-
-static gboolean	account_widget_salut_entry_focus_cb (GtkWidget                 *widget,
-						     GdkEventFocus             *event,
-						     EmpathyAccountWidgetSalut *settings);
-static void	account_widget_salut_destroy_cb	    (GtkWidget                 *widget,
-						     EmpathyAccountWidgetSalut *settings);
-static void	account_widget_salut_setup          (EmpathyAccountWidgetSalut *settings);
-
-
 
 static gboolean
 account_widget_salut_entry_focus_cb (GtkWidget               *widget,
@@ -87,14 +81,16 @@ account_widget_salut_entry_focus_cb (GtkWidget               *widget,
 	}
 	
 	str = gtk_entry_get_text (GTK_ENTRY (widget));
-	
 	if (G_STR_EMPTY (str)) {
 		gchar *value = NULL;
 
+		mc_account_unset_param (settings->account, param);
 		mc_account_get_param_string (settings->account, param, &value);
+		empathy_debug (DEBUG_DOMAIN, "Unset %s and restore to %s", param, value);
 		gtk_entry_set_text (GTK_ENTRY (widget), value ? value : "");
 		g_free (value);
 	} else {
+		empathy_debug (DEBUG_DOMAIN, "Setting %s to %s", param, str);
 		mc_account_set_param_string (settings->account, param, str);
 	}
 

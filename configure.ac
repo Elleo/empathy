@@ -1,4 +1,4 @@
-AC_INIT(Empathy, 0.21.5, http://bugzilla.gnome.org/browse.cgi?product=empathy)
+AC_INIT(Empathy, 0.21.6, http://bugzilla.gnome.org/browse.cgi?product=empathy)
 AC_PREREQ(2.59)
 AC_COPYRIGHT([
   Copyright (C) 2003-2007 Imendio AB
@@ -9,12 +9,12 @@ AC_COPYRIGHT([
 #   (Interfaces removed:    CURRENT++, AGE=0, REVISION=0)
 #   (Interfaces added:      CURRENT++, AGE++, REVISION=0)
 #   (No interfaces changed:                   REVISION++)
-LIBEMPATHY_CURRENT=8
-LIBEMPATHY_AGE=1
+LIBEMPATHY_CURRENT=9
+LIBEMPATHY_AGE=2
 LIBEMPATHY_REVISION=0
 
-LIBEMPATHY_GTK_CURRENT=8
-LIBEMPATHY_GTK_AGE=1
+LIBEMPATHY_GTK_CURRENT=9
+LIBEMPATHY_GTK_AGE=0
 LIBEMPATHY_GTK_REVISION=0
 
 AC_SUBST(LIBEMPATHY_CURRENT)
@@ -32,7 +32,7 @@ LIBGLADE_REQUIRED=2.0.0
 LIBPANELAPPLET_REQUIRED=2.10.0
 TELEPATHY_REQUIRED=0.3.1
 TELEPATHY_GLIB_REQUIRED=0.7.0
-MISSION_CONTROL_REQUIRED=4.37
+MISSION_CONTROL_REQUIRED=4.53
 
 # Uncomment that to build without deprecated symbols
 # AC_DEFINE(GTK_DISABLE_DEPRECATED, 1, [Disable deprecated GTK symbols])
@@ -40,8 +40,12 @@ MISSION_CONTROL_REQUIRED=4.37
 # AC_DEFINE(LIBTELEPATHY_DISABLE_DEPRECATED, 1, [Disable deprecated libtelepathy symbols])
 
 AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_AUX_DIR(.)
-AM_CONFIG_HEADER(config.h)
+
+GNOME_COMMON_INIT
+
 AM_INIT_AUTOMAKE(1.9 dist-bzip2 no-define)
 AM_MAINTAINER_MODE
 AC_ISC_POSIX
@@ -69,7 +73,6 @@ PKG_CHECK_MODULES(LIBEMPATHY,
 [
    glib-2.0 >= $GLIB_REQUIRED
    gobject-2.0
-   gconf-2.0 >= $GCONF_REQUIRED
    libxml-2.0
    libtelepathy >= $TELEPATHY_REQUIRED
    telepathy-glib >= $TELEPATHY_GLIB_REQUIRED
@@ -81,7 +84,6 @@ PKG_CHECK_MODULES(EMPATHY,
    glib-2.0 >= $GLIB_REQUIRED
    gobject-2.0
    gconf-2.0 >= $GCONF_REQUIRED
-   libxml-2.0
    libtelepathy >= $TELEPATHY_REQUIRED
    telepathy-glib >= $TELEPATHY_GLIB_REQUIRED
    libmissioncontrol >= $MISSION_CONTROL_REQUIRED
@@ -282,6 +284,13 @@ if test "x$enable_voip" = "xyes"; then
 fi
 
 AM_CONDITIONAL(HAVE_VOIP, test "x$enable_voip" = "xyes")
+
+
+# -----------------------------------------------------------
+# Misc
+# -----------------------------------------------------------
+AC_DEFINE_UNQUOTED([UNINSTALLED_GLADE_DIR], ["`pwd`/libempathy-gtk"], [path to glade files])
+AC_DEFINE_UNQUOTED([UNINSTALLED_DTD_DIR], ["`pwd`/libempathy"], [path to dtd files])
 
 # -----------------------------------------------------------
 

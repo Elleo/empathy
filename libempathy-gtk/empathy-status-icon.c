@@ -35,13 +35,13 @@
 #include <libempathy/empathy-tp-chat.h>
 #include <libempathy/empathy-debug.h>
 #include <libempathy/empathy-utils.h>
-#include <libempathy/empathy-conf.h>
 #include <libempathy/empathy-idle.h>
 #include <libempathy/empathy-filter.h>
 
 #include "empathy-status-icon.h"
 #include "empathy-contact-dialogs.h"
 #include "empathy-presence-chooser.h"
+#include "empathy-conf.h"
 #include "empathy-preferences.h"
 #include "empathy-ui-utils.h"
 #include "empathy-accounts-dialog.h"
@@ -101,7 +101,8 @@ static void       status_icon_idle_notify_cb      (EmpathyStatusIcon      *icon)
 static void       status_icon_update_tooltip      (EmpathyStatusIcon      *icon);
 static void       status_icon_set_from_state      (EmpathyStatusIcon      *icon);
 static void       status_icon_set_visibility      (EmpathyStatusIcon      *icon,
-						   gboolean                visible);
+						   gboolean                visible,
+						   gboolean                store);
 static void       status_icon_toggle_visibility   (EmpathyStatusIcon      *icon);
 static void       status_icon_activate_cb         (GtkStatusIcon          *status_icon,
 						   EmpathyStatusIcon      *icon);
@@ -153,6 +154,19 @@ status_icon_notify_use_nm_cb (EmpathyConf  *conf,
 }
 
 static void
+status_icon_notify_visibility_cb (EmpathyConf *conf,
+				  const gchar *key,
+				  gpointer     user_data)
+{
+	EmpathyStatusIcon *icon = user_data;
+	gboolean           hidden = FALSE;
+
+	if (empathy_conf_get_bool (conf, key, &hidden)) {
+		status_icon_set_visibility (icon, !hidden, FALSE);
+	}
+}
+
+static void
 empathy_status_icon_class_init (EmpathyStatusIconClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -192,6 +206,11 @@ empathy_status_icon_init (EmpathyStatusIcon *icon)
 	empathy_idle_set_auto_away (priv->idle, TRUE);
 	empathy_idle_set_use_nm (priv->idle, use_nm);
 
+	/* make icon listen and respond to MAIN_WINDOW_HIDDEN changes */
+	empathy_conf_notify_add (empathy_conf_get (),
+				 EMPATHY_PREFS_UI_MAIN_WINDOW_HIDDEN,
+				 status_icon_notify_visibility_cb,
+				 icon);
 
 	status_icon_create_menu (icon);
 	status_icon_idle_notify_cb (icon);
@@ -273,7 +292,7 @@ empathy_status_icon_new (GtkWindow *window)
 			      &should_hide);
 
 	if (gtk_window_is_active (priv->window) == should_hide) {
-		status_icon_set_visibility (icon, !should_hide);
+		status_icon_set_visibility (icon, !should_hide, FALSE);
 	}
 
 	return icon;
@@ -353,7 +372,7 @@ status_icon_idle_notify_cb (EmpathyStatusIcon *icon)
 	if (flash_state != MC_PRESENCE_UNSET) {
 		const gchar *icon_name;
 
-		icon_name = empathy_icon_name_for_presence_state (flash_state);
+		icon_name = empathy_icon_name_for_presence (flash_state);
 		if (!priv->flash_state_event) {
 			/* We are now flashing */
 			priv->flash_state_event = status_icon_event_new (icon, icon_name, NULL);
@@ -410,20 +429,23 @@ status_icon_set_from_state (EmpathyStatusIcon *icon)
 	priv = GET_PRIV (icon);
 
 	state = empathy_idle_get_state (priv->idle);
-	icon_name = empathy_icon_name_for_presence_state (state);
+	icon_name = empathy_icon_name_for_presence (state);
 	gtk_status_icon_set_from_icon_name (priv->icon, icon_name);
 }
 
 static void
 status_icon_set_visibility (EmpathyStatusIcon *icon,
-			    gboolean           visible)
+			    gboolean           visible,
+			    gboolean           store)
 {
 	EmpathyStatusIconPriv *priv;
 
 	priv = GET_PRIV (icon);
 
-	empathy_conf_set_bool (empathy_conf_get (),
-			      EMPATHY_PREFS_UI_MAIN_WINDOW_HIDDEN, !visible);
+	if (store) {
+		empathy_conf_set_bool (empathy_conf_get (),
+				       EMPATHY_PREFS_UI_MAIN_WINDOW_HIDDEN, !visible);
+	}
 
 	if (!visible) {
 		empathy_window_iconify (priv->window, priv->icon);
@@ -451,7 +473,7 @@ status_icon_toggle_visibility (EmpathyStatusIcon *icon)
 	gboolean               visible;
 
 	visible = gtk_window_is_active (priv->window);
-	status_icon_set_visibility (icon, !visible);
+	status_icon_set_visibility (icon, !visible, TRUE);
 }
 
 static void
@@ -477,7 +499,7 @@ status_icon_delete_event_cb (GtkWidget         *widget,
 			     GdkEvent          *event,
 			     EmpathyStatusIcon *icon)
 {
-	status_icon_set_visibility (icon, FALSE);
+	status_icon_set_visibility (icon, FALSE, TRUE);
 
 	return TRUE;
 }
@@ -569,7 +591,7 @@ status_icon_show_hide_window_cb (GtkWidget         *widget,
 	gboolean visible;
 
 	visible = gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget));
-	status_icon_set_visibility (icon, visible);
+	status_icon_set_visibility (icon, visible, TRUE);
 }
 
 static void

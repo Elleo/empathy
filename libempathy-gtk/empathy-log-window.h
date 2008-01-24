@@ -29,10 +29,10 @@
 
 G_BEGIN_DECLS
 
-void empathy_log_window_show (McAccount   *account,
-			     const gchar *chat_id,
-			     gboolean     chatroom,
-			     GtkWindow   *parent);
+GtkWidget * empathy_log_window_show (McAccount   *account,
+				     const gchar *chat_id,
+				     gboolean     chatroom,
+				     GtkWindow   *parent);
 
 G_END_DECLS
 

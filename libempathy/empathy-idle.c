@@ -60,7 +60,9 @@ struct _EmpathyIdlePriv {
 	gboolean        auto_away;
 	gboolean        use_nm;
 
+	gboolean        away_reset_status;
 	McPresence      away_saved_state;
+	gboolean        nm_reset_status;
 	McPresence      nm_saved_state;
 
 	gboolean        is_idle;
@@ -81,6 +83,7 @@ static void     idle_set_property            (GObject          *object,
 					      GParamSpec       *pspec);
 static void     idle_presence_changed_cb     (MissionControl   *mc,
 					      McPresence        state,
+					      gchar            *status,
 					      EmpathyIdle      *idle);
 static void     idle_session_idle_changed_cb (DBusGProxy       *gs_proxy,
 					      gboolean          is_idle,
@@ -167,10 +170,10 @@ empathy_idle_init (EmpathyIdle *idle)
 	priv->is_idle = FALSE;
 	priv->mc = empathy_mission_control_new ();
 	priv->state = mission_control_get_presence_actual (priv->mc, NULL);
-	idle_presence_changed_cb (priv->mc, priv->state, idle);
+	priv->status = mission_control_get_presence_message_actual (priv->mc, NULL);
 
 	dbus_g_proxy_connect_signal (DBUS_G_PROXY (priv->mc),
-				     "PresenceStatusActual",
+				     "PresenceChanged",
 				     G_CALLBACK (idle_presence_changed_cb),
 				     idle, NULL);
 
@@ -342,7 +345,7 @@ empathy_idle_get_status (EmpathyIdle *idle)
 	priv = GET_PRIV (idle);
 
 	if (!priv->status) {
-		return empathy_presence_state_get_default_status (priv->state);
+		return empathy_presence_get_default_message (priv->state);
 	}
 
 	return priv->status;
@@ -404,7 +407,7 @@ empathy_idle_set_presence (EmpathyIdle *idle,
 	}
 
 	/* Do not set translated default messages */
-	default_status = empathy_presence_state_get_default_status (state);
+	default_status = empathy_presence_get_default_message (state);
 	if (status && strcmp (status, default_status) == 0) {
 		status = NULL;
 	}
@@ -487,19 +490,21 @@ empathy_idle_set_use_nm (EmpathyIdle *idle,
 static void
 idle_presence_changed_cb (MissionControl *mc,
 			  McPresence      state,
+			  gchar          *status,
 			  EmpathyIdle    *idle)
 {
 	EmpathyIdlePriv *priv;
 
 	priv = GET_PRIV (idle);
 
+	empathy_debug (DEBUG_DOMAIN, "Presence changed to '%s' (%d)",
+		       status, state);
+
 	g_free (priv->status);
 	priv->state = state;
-	priv->status = mission_control_get_presence_message_actual (priv->mc, NULL);
-
-	if (G_STR_EMPTY (priv->status)) {
-		g_free (priv->status);
-		priv->status = NULL;
+	priv->status = NULL;
+	if (!G_STR_EMPTY (status)) {
+		priv->status = g_strdup (status);
 	}
 
 	g_object_notify (G_OBJECT (idle), "state");
@@ -538,9 +543,11 @@ idle_session_idle_changed_cb (DBusGProxy  *gs_proxy,
 			 * default presence. */
 			new_state = priv->state;
 			priv->away_saved_state = MC_PRESENCE_AVAILABLE;
+			priv->away_reset_status = TRUE;
 		} else {
 			new_state = MC_PRESENCE_AWAY;
 			priv->away_saved_state = priv->state;
+			priv->away_reset_status = FALSE;
 		}
 
 		empathy_debug (DEBUG_DOMAIN, "Going to autoaway");
@@ -551,18 +558,23 @@ idle_session_idle_changed_cb (DBusGProxy  *gs_proxy,
 		/* We are no more idle, restore state */
 		idle_ext_away_stop (idle);
 
-		empathy_debug (DEBUG_DOMAIN, "Restoring state to %d",
-			      priv->away_saved_state);
+		empathy_debug (DEBUG_DOMAIN, "Restoring state to %d, reset status: %s",
+			      priv->away_saved_state,
+			      priv->away_reset_status ? "Yes" : "No");
 
 		if (priv->nm_connected) {
-			empathy_idle_set_state (idle, priv->away_saved_state);
+			empathy_idle_set_presence (idle,
+						   priv->away_saved_state,
+						   priv->away_reset_status ? NULL : priv->status);
 		} else {
 			/* We can't restore state now, will do when NM gets
 			 * connected. */
 			priv->nm_saved_state = priv->away_saved_state;
+			priv->nm_reset_status = priv->away_reset_status;
 		}
 
 		priv->away_saved_state = MC_PRESENCE_UNSET;
+		priv->away_reset_status = FALSE;
 	}
 
 	priv->is_idle = is_idle;
@@ -600,8 +612,11 @@ idle_nm_state_change_cb (DBusGProxy  *proxy,
 	}
 	else if (!old_nm_connected && new_nm_connected) {
 		/* We are now connected */
-		empathy_idle_set_state (idle, priv->nm_saved_state);
+		empathy_idle_set_presence (idle,
+					   priv->nm_saved_state,
+					   priv->nm_reset_status ? NULL : priv->status);
 		priv->nm_saved_state = MC_PRESENCE_UNSET;
+		priv->nm_reset_status = FALSE;
 	}
 
 	priv->nm_connected = new_nm_connected;

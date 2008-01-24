@@ -29,6 +29,7 @@
 #include <libtelepathy/tp-conn.h>
 #include <libtelepathy/tp-chan.h>
 #include <libtelepathy/tp-chan-type-contact-list-gen.h>
+#include <telepathy-glib/util.h>
 
 #include "empathy-tp-contact-list.h"
 #include "empathy-contact-list.h"
@@ -169,7 +170,7 @@ tp_contact_list_find_group (EmpathyTpContactList *list,
 	GList                    *l;
 
 	for (l = priv->groups; l; l = l->next) {
-		if (strcmp (group, empathy_tp_group_get_name (l->data)) == 0) {
+		if (!tp_strdiff (group, empathy_tp_group_get_name (l->data))) {
 			return l->data;
 		}
 	}
@@ -180,22 +181,16 @@ static TpContactListType
 tp_contact_list_get_type (EmpathyTpContactList *list,
 			  EmpathyTpGroup       *group)
 {
-	EmpathyTpContactListPriv *priv;
-	TpContactListType         list_type;
-	const gchar              *name;
-
-	priv = GET_PRIV (list);
+	const gchar *name;
 
 	name = empathy_tp_group_get_name (group);
-	if (strcmp (name, "subscribe") == 0) {
-		list_type = TP_CONTACT_LIST_TYPE_SUBSCRIBE;
-	} else if (strcmp (name, "publish") == 0) {
-		list_type = TP_CONTACT_LIST_TYPE_PUBLISH;
-	} else {
-		list_type = TP_CONTACT_LIST_TYPE_UNKNOWN;
+	if (!tp_strdiff (name, "subscribe")) {
+		return TP_CONTACT_LIST_TYPE_SUBSCRIBE;
+	} else if (!tp_strdiff (name, "publish")) {
+		return TP_CONTACT_LIST_TYPE_PUBLISH;
 	}
 
-	return list_type;
+	return TP_CONTACT_LIST_TYPE_UNKNOWN;
 }
 
 static void

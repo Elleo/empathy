@@ -28,7 +28,6 @@
 #include <glade/glade.h>
 #include <glib/gi18n.h>
 
-#include <libempathy/empathy-conf.h>
 #include <libempathy/empathy-contact.h>
 #include <libempathy/empathy-debug.h>
 #include <libempathy/empathy-utils.h>
@@ -37,6 +36,7 @@
 #include <libempathy/empathy-contact-list.h>
 #include <libempathy/empathy-contact-manager.h>
 #include <libempathy/empathy-contact-factory.h>
+#include <libempathy/empathy-status-presets.h>
 
 #include "empathy-main-window.h"
 #include "empathy-contact-dialogs.h"
@@ -45,8 +45,8 @@
 #include "empathy-contact-list-view.h"
 #include "empathy-presence-chooser.h"
 #include "empathy-ui-utils.h"
-#include "empathy-status-presets.h"
 #include "empathy-geometry.h"
+#include "empathy-conf.h"
 #include "empathy-preferences.h"
 #include "empathy-accounts-dialog.h"
 #include "empathy-about-dialog.h"
@@ -285,8 +285,8 @@ empathy_main_window_show (void)
 
 	list_iface = EMPATHY_CONTACT_LIST (empathy_contact_manager_new ());
 	window->list_store = empathy_contact_list_store_new (list_iface);
-	window->list_view = empathy_contact_list_view_new (window->list_store);
-	empathy_contact_list_view_set_interactive (window->list_view, TRUE);
+	window->list_view = empathy_contact_list_view_new (window->list_store,
+							   EMPATHY_CONTACT_LIST_FEATURE_ALL);
 	g_object_unref (list_iface);
 
 	gtk_widget_show (GTK_WIDGET (window->list_view));
@@ -810,7 +810,7 @@ main_window_error_display (EmpathyMainWindow *window,
 	gtk_widget_show (image);
 	gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, FALSE, 0);
 
-	label = gtk_label_new_with_mnemonic (_("Edit Account _Details"));
+	label = gtk_label_new_with_mnemonic (_("_Edit account"));
 	gtk_widget_show (label);
 	gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, FALSE, 0);
 

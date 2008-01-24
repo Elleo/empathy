@@ -15,6 +15,7 @@ libempathy_gtk_la_SOURCES =             	\
 	ephy-spinner.c ephy-spinner.h		\
 	empathy-main-window.c			\
 	empathy-status-icon.c			\
+	empathy-conf.c				\
 	empathy-contact-widget.c		\
 	empathy-contact-dialogs.c		\
 	empathy-accounts-dialog.c		\
@@ -29,7 +30,6 @@ libempathy_gtk_la_SOURCES =             	\
 	empathy-cell-renderer-activatable.c	\
 	empathy-spell.c				\
 	empathy-spell-dialog.c			\
-	empathy-contact-groups.c		\
 	empathy-contact-list-store.c		\
 	empathy-contact-list-view.c		\
 	empathy-preferences.c			\
@@ -44,7 +44,6 @@ libempathy_gtk_la_SOURCES =             	\
 	empathy-private-chat.c			\
 	empathy-group-chat.c			\
 	empathy-geometry.c			\
-	empathy-status-presets.c		\
 	empathy-presence-chooser.c		\
 	empathy-about-dialog.c			\
 	empathy-account-chooser.c		\
@@ -72,6 +71,7 @@ libempathy_gtk_headers =			\
 	empathy-images.h			\
 	empathy-main-window.h			\
 	empathy-status-icon.h			\
+	empathy-conf.h				\
 	empathy-contact-widget.h		\
 	empathy-contact-dialogs.h		\
 	empathy-accounts-dialog.h		\
@@ -86,7 +86,6 @@ libempathy_gtk_headers =			\
 	empathy-cell-renderer-activatable.h	\
 	empathy-spell.h				\
 	empathy-spell-dialog.h			\
-	empathy-contact-groups.h		\
 	empathy-contact-list-store.h		\
 	empathy-contact-list-view.h		\
 	empathy-preferences.h			\
@@ -101,7 +100,6 @@ libempathy_gtk_headers =			\
 	empathy-private-chat.h			\
 	empathy-group-chat.h			\
 	empathy-geometry.h			\
-	empathy-status-presets.h		\
 	empathy-presence-chooser.h		\
 	empathy-about-dialog.h			\
 	empathy-account-chooser.h		\
@@ -179,17 +177,11 @@ empathy-gtk-enum-types.c: Makefile $(libempathy_gtk_headers)
 	&& cp xgen-gtc $(@F) \
 	&& rm -f xgen-gtc
 
-dtddir = $(datadir)/empathy
-dtd_DATA = 					\
-	empathy-status-presets.dtd		\
-	empathy-contact-groups.dtd
-
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libempathy-gtk.pc
 
 EXTRA_DIST =			\
-	$(glade_DATA)		\
-	$(dtd_DATA)
+	$(glade_DATA)
 
 CLEANFILES =				\
 	$(BUILT_SOURCES)		\

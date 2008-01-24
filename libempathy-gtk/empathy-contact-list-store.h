@@ -81,6 +81,9 @@ void                       empathy_contact_list_store_set_show_offline   (Empath
 gboolean                   empathy_contact_list_store_get_show_avatars   (EmpathyContactListStore     *store);
 void                       empathy_contact_list_store_set_show_avatars   (EmpathyContactListStore     *store,
 									 gboolean                    show_avatars);
+gboolean                   empathy_contact_list_store_get_show_groups   (EmpathyContactListStore     *store);
+void                       empathy_contact_list_store_set_show_groups   (EmpathyContactListStore     *store,
+									 gboolean                    show_groups);
 gboolean                   empathy_contact_list_store_get_is_compact     (EmpathyContactListStore     *store);
 void                       empathy_contact_list_store_set_is_compact     (EmpathyContactListStore     *store,
 									 gboolean                    is_compact);
