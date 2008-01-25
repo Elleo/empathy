@@ -386,13 +386,11 @@ empathy_account_widget_irc_new (McAccount *account)
   networks = empathy_irc_network_manager_get_networks (
       settings->network_manager);
 
-  g_print ("aaaaaaaa\n");
   for (l = networks; l != NULL; l = g_slist_next (l))
     {
       gchar *name;
 
       g_object_get (l->data, "name", &name, NULL);
-      g_print ("bbbbbbbbb %s\n", name);
       gtk_list_store_append (store, &iter);
       /* FIXME: remove this COL_NETWORK_ID */
       gtk_list_store_set (store, &iter, COL_NETWORK_ID, "ID",
