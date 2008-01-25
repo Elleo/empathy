@@ -30,10 +30,7 @@
 #include <libmissioncontrol/mc-account.h>
 #include <libmissioncontrol/mc-protocol.h>
 
-#if 0
-#include "empathy-irc-network-manager.h"
-#endif
-
+#include <libempathy/empathy-irc-network-manager.h>
 #include "empathy-account-widget-irc.h"
 #include "empathy-ui-utils.h"
 
@@ -41,9 +38,7 @@
 typedef struct {
   McAccount *account;
   gboolean account_changed;
-#if 0
   EmpathyIrcNetworkManager *network_manager;
-#endif
 
   GtkWidget *vbox_settings;
 
@@ -205,6 +200,8 @@ account_widget_irc_destroy_cb (GtkWidget *widget,
       account_widget_irc_protocol_error_cb,
       settings);
 
+  g_object_unref (settings->network_manager);
+
   g_object_unref (settings->account);
   g_free (settings);
   */
@@ -350,13 +347,15 @@ empathy_account_widget_irc_new (McAccount *account)
   GtkSizeGroup *size_group;
   GtkWidget *label_network, *label_nick, *label_fullname;
   GtkWidget *label_password, *label_quit_message;
+  GSList *networks, *l;
 
   settings = g_new0 (EmpathyAccountWidgetIrc, 1);
   settings->account = g_object_ref (account);
 
-#if 0
-  settings->network_manager = empathy_irc_network_manager_new ();
-#endif
+  /* FIXME: set the right paths */
+  settings->network_manager = empathy_irc_network_manager_new (
+      "/home/cassidy/gnome/empathy/tests/xml/default-irc-networks-sample.xml",
+      NULL);
 
   glade = empathy_glade_get_file ("empathy-account-widget-irc.glade",
       "vbox_irc_settings",
@@ -382,15 +381,25 @@ empathy_account_widget_irc_new (McAccount *account)
   gtk_list_store_append (store, &iter);
   gtk_list_store_set (store, &iter, COL_NETWORK_ID, "new",
       COL_NETWORK_NAME, _("New..."), -1);
-  gtk_list_store_append (store, &iter);
-  gtk_list_store_set (store, &iter, COL_NETWORK_ID, "undernet",
-      COL_NETWORK_NAME, "Undernet", -1);
-  gtk_list_store_append (store, &iter);
-  gtk_list_store_set (store, &iter, COL_NETWORK_ID, "freenode",
-      COL_NETWORK_NAME, "FreeNode", -1);
-  gtk_list_store_append (store, &iter);
-  gtk_list_store_set (store, &iter, COL_NETWORK_ID, "gimpnet",
-      COL_NETWORK_NAME, "GimpNet", -1);
+
+  /* TODO: free the list and unref networks */
+  networks = empathy_irc_network_manager_get_networks (
+      settings->network_manager);
+
+  g_print ("aaaaaaaa\n");
+  for (l = networks; l != NULL; l = g_slist_next (l))
+    {
+      gchar *name;
+
+      g_object_get (l->data, "name", &name, NULL);
+      g_print ("bbbbbbbbb %s\n", name);
+      gtk_list_store_append (store, &iter);
+      /* FIXME: remove this COL_NETWORK_ID */
+      gtk_list_store_set (store, &iter, COL_NETWORK_ID, "ID",
+          COL_NETWORK_NAME, name, -1);
+
+      g_free (name);
+    }
 
   gtk_cell_layout_clear (GTK_CELL_LAYOUT (settings->combobox_network)); 
   renderer = gtk_cell_renderer_text_new ();
