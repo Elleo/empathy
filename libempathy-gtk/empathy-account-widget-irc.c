@@ -52,46 +52,6 @@ typedef struct {
   GtkWidget *entry_quit_message;
 } EmpathyAccountWidgetIrc;
 
-/*
-static void 
-account_widget_irc_save (EmpathyAccountWidgetIrc *settings);
-*/
-
-static gboolean
-account_widget_irc_entry_focus_cb (GtkWidget *widget, GdkEventFocus *event,
-    EmpathyAccountWidgetIrc *settings);
-
-static void
-account_widget_irc_entry_changed_cb (GtkWidget *widget,
-    EmpathyAccountWidgetIrc *settings);
-
-static void
-account_widget_irc_destroy_cb (GtkWidget *widget,
-    EmpathyAccountWidgetIrc *settings);
-
-static void
-account_widget_irc_button_network_clicked_cb (GtkWidget *button,
-    EmpathyAccountWidgetIrc *settings);
-
-static void
-account_widget_irc_button_remove_clicked_cb (GtkWidget *button,
-    EmpathyAccountWidgetIrc *settings);
-
-static void
-account_widget_irc_setup (EmpathyAccountWidgetIrc *settings);
-
-static gboolean
-account_widget_irc_is_separator (GtkTreeModel *model, GtkTreeIter *iter,
-    gpointer data);
-
-static gint
-account_widget_irc_sort (GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
-    gpointer user_data);
-
-static void
-account_widget_irc_combobox_network_changed_cb (GtkWidget *combobox,
-    EmpathyAccountWidgetIrc *settings);
-
 enum {
   COL_NETWORK_OBJ,
   COL_NETWORK_NAME,
