@@ -93,7 +93,7 @@ account_widget_irc_combobox_network_changed_cb (GtkWidget *combobox,
     EmpathyAccountWidgetIrc *settings);
 
 enum {
-  COL_NETWORK_ID,
+  COL_NETWORK_OBJ,
   COL_NETWORK_NAME,
 };
 
@@ -211,6 +211,7 @@ static void
 account_widget_irc_button_network_clicked_cb (GtkWidget *button,
                                               EmpathyAccountWidgetIrc *settings)
 {
+  g_print ("edit network\n");
   //empathy_irc_network_dialog_show ();
 }
 
@@ -245,29 +246,31 @@ account_widget_irc_sort (GtkTreeModel *model,
                          gpointer user_data)
 {
   gchar *name_a, *name_b;
-  gchar *id_a, *id_b;
+  EmpathyIrcNetwork *network_a, *network_b;
   gint result;
 
   gtk_tree_model_get (model, a,
-      COL_NETWORK_ID, &id_a,
+      COL_NETWORK_OBJ, &network_a,
       COL_NETWORK_NAME, &name_a,
       -1);
   gtk_tree_model_get (model, b,
-      COL_NETWORK_ID, &id_b,
+      COL_NETWORK_OBJ, &network_b,
       COL_NETWORK_NAME, &name_b,
       -1);
 
-  if (strcmp (id_a, "new") == 0)
+  if (network_a == NULL)
     result = -1;
-  else if (strcmp (id_b, "new") == 0)
+  else if (network_b == NULL)
     result = 1;
   else
     result = strcmp (name_a, name_b);
 
-  g_free (id_a);
-  g_free (id_b);
   g_free (name_a);
   g_free (name_b);
+  if (network_a != NULL)
+    g_object_unref (network_a);
+  if (network_b != NULL)
+    g_object_unref (network_b);
 
   return result;
 }
@@ -276,6 +279,7 @@ static void
 account_widget_irc_combobox_network_changed_cb (GtkWidget *combobox,
                                                 EmpathyAccountWidgetIrc *settings)
 {
+#if 0
   GtkTreeIter iter;
   GtkTreeModel *model;
   gchar *network_id;
@@ -283,9 +287,10 @@ account_widget_irc_combobox_network_changed_cb (GtkWidget *combobox,
   gtk_combo_box_get_active_iter (GTK_COMBO_BOX (combobox), &iter);
   model = gtk_combo_box_get_model (GTK_COMBO_BOX (combobox));
   // TODO: finish that
-  gtk_tree_model_get (model, &iter, COL_NETWORK_ID, &network_id, -1);
+  //gtk_tree_model_get (model, &iter, COL_NETWORK_ID, &network_id, -1);
 
   g_free (network_id);
+#endif
 }
 
 static void
@@ -376,28 +381,29 @@ empathy_account_widget_irc_new (McAccount *account)
       NULL);
 
   /* Fill the networks combobox */
-  store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_STRING);
+  store = gtk_list_store_new (2, G_TYPE_OBJECT, G_TYPE_STRING);
 
   gtk_list_store_append (store, &iter);
-  gtk_list_store_set (store, &iter, COL_NETWORK_ID, "new",
+  gtk_list_store_set (store, &iter, COL_NETWORK_OBJ, NULL,
       COL_NETWORK_NAME, _("New..."), -1);
 
-  /* TODO: free the list and unref networks */
   networks = empathy_irc_network_manager_get_networks (
       settings->network_manager);
 
   for (l = networks; l != NULL; l = g_slist_next (l))
     {
       gchar *name;
+      EmpathyIrcNetwork *network = l->data;
 
-      g_object_get (l->data, "name", &name, NULL);
+      g_object_get (network, "name", &name, NULL);
       gtk_list_store_append (store, &iter);
-      /* FIXME: remove this COL_NETWORK_ID */
-      gtk_list_store_set (store, &iter, COL_NETWORK_ID, "ID",
+      gtk_list_store_set (store, &iter, COL_NETWORK_OBJ, network,
           COL_NETWORK_NAME, name, -1);
 
       g_free (name);
+      g_object_unref (network);
     }
+  g_slist_free (networks);
 
   gtk_cell_layout_clear (GTK_CELL_LAYOUT (settings->combobox_network)); 
   renderer = gtk_cell_renderer_text_new ();
