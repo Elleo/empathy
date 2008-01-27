@@ -194,7 +194,7 @@ account_widget_irc_is_separator (GtkTreeModel *model,
   result = gtk_tree_path_get_indices (path)[0] == 0;
   gtk_tree_path_free (path);
 
-  //return result;
+  /* return result; */
   /* FIXME: "New..." disappear if we display the separator */
   return FALSE;
 }
@@ -239,18 +239,23 @@ static void
 account_widget_irc_combobox_network_changed_cb (GtkWidget *combobox,
                                                 EmpathyAccountWidgetIrc *settings)
 {
-#if 0
   GtkTreeIter iter;
   GtkTreeModel *model;
-  gchar *network_id;
+  EmpathyIrcNetwork *network;
 
   gtk_combo_box_get_active_iter (GTK_COMBO_BOX (combobox), &iter);
   model = gtk_combo_box_get_model (GTK_COMBO_BOX (combobox));
-  // TODO: finish that
-  //gtk_tree_model_get (model, &iter, COL_NETWORK_ID, &network_id, -1);
+  gtk_tree_model_get (model, &iter, COL_NETWORK_OBJ, &network, -1);
 
-  g_free (network_id);
-#endif
+  if (network == NULL)
+    {
+      /* TODO Open new network dialog */
+    }
+  else
+    {
+      /* TODO: change account setting */
+      g_object_unref (network);
+    }
 }
 
 static void
@@ -382,11 +387,13 @@ empathy_account_widget_irc_new (McAccount *account)
       account_widget_irc_sort,
       NULL, NULL);
 
-  gtk_combo_box_set_row_separator_func (GTK_COMBO_BOX (settings->combobox_network),
+  gtk_combo_box_set_row_separator_func (
+      GTK_COMBO_BOX (settings->combobox_network),
       account_widget_irc_is_separator,
       NULL, NULL);
 
-  gtk_combo_box_set_model (GTK_COMBO_BOX (settings->combobox_network), GTK_TREE_MODEL (store));
+  gtk_combo_box_set_model (GTK_COMBO_BOX (settings->combobox_network),
+      GTK_TREE_MODEL (store));
   g_object_unref (store);
 
   account_widget_irc_setup (settings);
