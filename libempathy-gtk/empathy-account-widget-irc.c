@@ -259,9 +259,37 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
     {
       /* TODO select network */
       gchar *name;
+      GtkTreeIter iter;
+      gboolean valid;
+      GtkTreeModel *model;
+      gboolean found = FALSE;
 
       g_object_get (network, "name", &name, NULL);
       empathy_debug (DEBUG_DOMAIN, "Account use network %s", name);
+
+      /* FIXME: is it the right way to do that ? */
+      model = gtk_combo_box_get_model (
+          GTK_COMBO_BOX (settings->combobox_network));
+
+      valid = gtk_tree_model_get_iter_first (model, &iter);
+      while (valid && !found)
+        {
+          EmpathyIrcNetwork *_network;
+          gtk_tree_model_get (model, &iter, COL_NETWORK_OBJ, &_network, NULL);
+
+          if (network == _network)
+            {
+              gtk_combo_box_set_active_iter (
+                  GTK_COMBO_BOX (settings->combobox_network), &iter);
+              found = TRUE;
+            }
+
+          valid = gtk_tree_model_iter_next (model, &iter);
+
+          if (_network != NULL)
+            g_object_unref (_network);
+        }
+      g_assert (found);
 
       g_free (name);
     }
