@@ -37,7 +37,6 @@
 
 typedef struct {
   McAccount *account;
-  gboolean account_changed;
   EmpathyIrcNetworkManager *network_manager;
 
   GtkWidget *vbox_settings;
@@ -88,23 +87,8 @@ account_widget_irc_save (EmpathyAccountWidgetIrc *settings)
       NULL);
 
   empathy_account_manager_store (manager);
-
-  settings->account_changed = FALSE;
 }
   */
-
-/*
-static void
-account_widget_irc_protocol_error_cb (EmpathySession             *session,
-    EmpathyProtocol            *protocol,
-    EmpathyAccount             *account,
-    GError                    *error,
-    EmpathyAccountWidgetIrc *settings)
-{
-  if (empathy_account_equal (account, settings->account)) {
-  } 
-}
-*/
 
 static gboolean
 account_widget_irc_entry_focus_cb (GtkWidget *widget,
@@ -140,31 +124,15 @@ static void
 account_widget_irc_entry_changed_cb (GtkWidget *widget,
                                      EmpathyAccountWidgetIrc *settings)
 {
-  settings->account_changed = TRUE;
 }
 
 static void
 account_widget_irc_destroy_cb (GtkWidget *widget,
                                EmpathyAccountWidgetIrc *settings)
 {
-  /*
-  EmpathySession *session;
-
-  if (settings->account_changed) {
-    account_widget_irc_save (settings); 
-  }
-
-  session = empathy_app_get_session ();
-
-  g_signal_handlers_disconnect_by_func (session,
-      account_widget_irc_protocol_error_cb,
-      settings);
-
   g_object_unref (settings->network_manager);
-
   g_object_unref (settings->account);
   g_free (settings);
-  */
 }
 
 static void
@@ -261,32 +229,33 @@ account_widget_irc_combobox_network_changed_cb (GtkWidget *combobox,
 static void
 account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
 {
-  /*
-  McProtocol*protocol;
-  McProfile *profile;
-  const gchar    *nick;
-  const gchar    *password;
-  const gchar    *fullname;
-  const gchar    *quit_message;
+  gchar *nick;
+  gchar *password;
+  gchar *fullname;
+  gchar *quit_message;
+  gchar *server;
+  gint port;
+  gchar *charset;
+  gboolean ssl;
 
-  session = empathy_app_get_session ();
-  protocol = empathy_session_get_protocol (session, settings->account);
-
-  empathy_account_param_get (settings->account,
-      "account", &nick,
-      "fullname", &fullname,
-      "password", &password,
-      "quit-message", &quit_message,
-      NULL);
+  mc_account_get_param_string (settings->account, "account", &nick);
+  mc_account_get_param_string (settings->account, "fullname", &fullname);
+  mc_account_get_param_string (settings->account, "password", &password);
+  mc_account_get_param_string (settings->account, "quit-message",
+      &quit_message);
+  /* FIXME: use these params */
+  mc_account_get_param_string (settings->account, "server", &server);
+  mc_account_get_param_int (settings->account, "port", &port);
+  mc_account_get_param_boolean (settings->account, "use-ssl", &ssl);
 
   if (!nick)
-    nick = g_get_user_name ();
+    nick = g_strdup (g_get_user_name ());
 
   if (!fullname)
     {
-      fullname = g_get_real_name ();
+      fullname = g_strdup (g_get_real_name ());
       if (!fullname)
-        fullname = nick;
+        fullname = g_strdup (nick);
     }
 
   gtk_entry_set_text (GTK_ENTRY (settings->entry_nick), nick ? nick : "");
@@ -296,14 +265,12 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
       fullname ? fullname : "");
   gtk_entry_set_text (GTK_ENTRY (settings->entry_quit_message),
       quit_message ? quit_message : "");
-      */
 
-  /* Set up protocol signals */
-  /*
-  g_signal_connect (session, "protocol-error",
-      G_CALLBACK (account_widget_irc_protocol_error_cb),
-      settings);
-      */
+  g_free (nick);
+  g_free (fullname);
+  g_free (password);
+  g_free (quit_message);
+  g_free (server);
 }
 
 GtkWidget *
