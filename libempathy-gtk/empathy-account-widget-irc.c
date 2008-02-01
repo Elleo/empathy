@@ -60,40 +60,6 @@ enum {
   COL_NETWORK_NAME,
 };
 
-  /*
-static void
-account_widget_irc_save (EmpathyAccountWidgetIrc *settings)
-{
-  EmpathySession        *session;
-  EmpathyAccountManager *manager;
-  const gchar          *nick;
-  const gchar          *password;
-  const gchar          *fullname;
-  const gchar          *quit_message;
-
-  session = empathy_app_get_session ();
-  manager = empathy_session_get_account_manager (session);
-
-  nick = gtk_entry_get_text (GTK_ENTRY (settings->entry_nick));
-  password = gtk_entry_get_text (GTK_ENTRY (settings->entry_password));
-  fullname = gtk_entry_get_text (GTK_ENTRY (settings->entry_fullname));
-  quit_message = gtk_entry_get_text (GTK_ENTRY (settings->entry_quit_message));
-
-  empathy_account_param_set (settings->account,
-      "account", nick,
-      "password", password,
-      "fullname", fullname,
-      "quit-message", quit_message,
-      "server", "irc.freenode.net",
-      "port", 6667,
-      "charset", "UTF-8"
-      "use_ssl", FALSE,
-      NULL);
-
-  empathy_account_manager_store (manager);
-}
-  */
-
 static gboolean
 account_widget_irc_entry_focus_cb (GtkWidget *widget,
                                    GdkEventFocus *event,
@@ -137,30 +103,6 @@ account_widget_irc_entry_focus_cb (GtkWidget *widget,
     }
 
   return FALSE;
-
-  /*
-  const gchar *str;
-
-  str = gtk_entry_get_text (GTK_ENTRY (widget));
-  if (G_STR_EMPTY (str)) {
-    if (widget == settings->entry_nick) {
-      empathy_account_param_get (settings->account, "account", &str, NULL);
-    } else if (widget == settings->entry_fullname) {
-      empathy_account_param_get (settings->account, "fullname", &str, NULL);
-    } else if (widget == settings->entry_quit_message) {
-      empathy_account_param_get (settings->account, "quit-message", &str, NULL);
-    }
-
-    gtk_entry_set_text (GTK_ENTRY (widget), str ? str : "");
-    settings->account_changed = FALSE;
-  }
-
-  if (settings->account_changed) {
-    account_widget_irc_save (settings); 
-  }
-
-  */
-  return FALSE;
 }
 
 static void
@@ -169,7 +111,7 @@ account_widget_irc_destroy_cb (GtkWidget *widget,
 {
   g_object_unref (settings->network_manager);
   g_object_unref (settings->account);
-  g_free (settings);
+  g_slice_free (EmpathyAccountWidgetIrc, settings);
 }
 
 static void
@@ -325,7 +267,7 @@ empathy_account_widget_irc_new (McAccount *account)
   GtkWidget *label_password, *label_quit_message;
   GSList *networks, *l;
 
-  settings = g_new0 (EmpathyAccountWidgetIrc, 1);
+  settings = g_slice_new0 (EmpathyAccountWidgetIrc);
   settings->account = g_object_ref (account);
 
   /* FIXME: set the right paths */
