@@ -229,6 +229,7 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
       &quit_message);
   /* FIXME: use these params */
   mc_account_get_param_string (settings->account, "server", &server);
+  mc_account_get_param_string (settings->account, "charset", &charset);
   mc_account_get_param_int (settings->account, "port", &port);
   mc_account_get_param_boolean (settings->account, "use-ssl", &ssl);
 
@@ -275,6 +276,7 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
   g_free (password);
   g_free (quit_message);
   g_free (server);
+  g_free (charset);
 }
 
 GtkWidget *

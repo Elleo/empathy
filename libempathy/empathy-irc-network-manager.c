@@ -677,8 +677,8 @@ empathy_irc_network_manager_find_network_by_address (EmpathyIrcNetworkManager *s
 
   g_return_val_if_fail (address != NULL, NULL);
 
-  network = g_hash_table_find (priv->networks, (GHFunc) find_network_by_address,
-      address);
+  network = g_hash_table_find (priv->networks, (GHRFunc) find_network_by_address,
+      (gchar *) address);
 
   return network;
 }
