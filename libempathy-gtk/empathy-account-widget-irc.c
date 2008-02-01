@@ -220,6 +220,7 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
   gint port;
   gchar *charset;
   gboolean ssl;
+  EmpathyIrcNetwork *network;
 
   mc_account_get_param_string (settings->account, "account", &nick);
   mc_account_get_param_string (settings->account, "fullname", &fullname);
@@ -250,6 +251,24 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
       fullname ? fullname : "");
   gtk_entry_set_text (GTK_ENTRY (settings->entry_quit_message),
       quit_message ? quit_message : "");
+
+  network = empathy_irc_network_manager_find_network_by_address (
+      settings->network_manager, server);
+  if (network != NULL)
+    {
+      /* TODO select network */
+      gchar *name;
+
+      g_object_get (network, "name", &name, NULL);
+      empathy_debug (DEBUG_DOMAIN, "Account use network %s", name);
+
+      g_free (name);
+    }
+  else
+    {
+      /* TODO  humm open the new network dialog ? */
+      g_print ("no network using this server: %s\n", server);
+    }
 
   g_free (nick);
   g_free (fullname);
