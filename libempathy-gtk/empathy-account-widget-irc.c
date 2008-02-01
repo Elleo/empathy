@@ -76,6 +76,10 @@ account_widget_irc_entry_focus_cb (GtkWidget *widget,
     {
       param = "fullname";
     }
+  else if (widget == settings->entry_password)
+    {
+      param = "password";
+    }
   else if (widget == settings->entry_quit_message)
     {
       param = "quit-message";
@@ -350,6 +354,7 @@ empathy_account_widget_irc_new (McAccount *account)
       "vbox_irc_settings", "destroy", account_widget_irc_destroy_cb,
       "entry_nick", "focus-out-event", account_widget_irc_entry_focus_cb,
       "entry_fullname", "focus-out-event", account_widget_irc_entry_focus_cb,
+      "entry_password", "focus-out-event", account_widget_irc_entry_focus_cb,
       "entry_quit_message", "focus-out-event", account_widget_irc_entry_focus_cb,
       "button_network", "clicked", account_widget_irc_button_network_clicked_cb,
       "button_remove", "clicked", account_widget_irc_button_remove_clicked_cb,
