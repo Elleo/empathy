@@ -30,10 +30,14 @@
 #include <libmissioncontrol/mc-account.h>
 #include <libmissioncontrol/mc-protocol.h>
 
+#include <libempathy/empathy-utils.h>
+#include <libempathy/empathy-debug.h>
+
 #include <libempathy/empathy-irc-network-manager.h>
 #include "empathy-account-widget-irc.h"
 #include "empathy-ui-utils.h"
 
+#define DEBUG_DOMAIN "AccountWidgetIRC"
 
 typedef struct {
   McAccount *account;
@@ -95,6 +99,45 @@ account_widget_irc_entry_focus_cb (GtkWidget *widget,
                                    GdkEventFocus *event,
                                    EmpathyAccountWidgetIrc *settings)
 {
+  const gchar *param;
+  const gchar *str;
+
+  if (widget == settings->entry_nick)
+    {
+      param = "account";
+    }
+  else if (widget == settings->entry_fullname)
+    {
+      param = "fullname";
+    }
+  else if (widget == settings->entry_quit_message)
+    {
+      param = "quit-message";
+    }
+  else
+    {
+      return FALSE;
+    }
+
+  str = gtk_entry_get_text (GTK_ENTRY (widget));
+  if (G_STR_EMPTY (str))
+    {
+      gchar *value = NULL;
+
+      mc_account_unset_param (settings->account, param);
+      mc_account_get_param_string (settings->account, param, &value);
+      empathy_debug (DEBUG_DOMAIN, "Unset %s and restore to %s", param, value);
+      gtk_entry_set_text (GTK_ENTRY (widget), value ? value : "");
+      g_free (value);
+    }
+  else
+    {
+      empathy_debug (DEBUG_DOMAIN, "Setting %s to %s", param, str);
+      mc_account_set_param_string (settings->account, param, str);
+    }
+
+  return FALSE;
+
   /*
   const gchar *str;
 
@@ -118,12 +161,6 @@ account_widget_irc_entry_focus_cb (GtkWidget *widget,
 
   */
   return FALSE;
-}
-
-static void
-account_widget_irc_entry_changed_cb (GtkWidget *widget,
-                                     EmpathyAccountWidgetIrc *settings)
-{
 }
 
 static void
@@ -229,11 +266,11 @@ account_widget_irc_combobox_network_changed_cb (GtkWidget *combobox,
 static void
 account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
 {
-  gchar *nick;
-  gchar *password;
-  gchar *fullname;
-  gchar *quit_message;
-  gchar *server;
+  gchar *nick = NULL;
+  gchar *password = NULL;
+  gchar *fullname = NULL;
+  gchar *quit_message= NULL;
+  gchar *server = NULL;
   gint port;
   gchar *charset;
   gboolean ssl;
@@ -255,7 +292,9 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
     {
       fullname = g_strdup (g_get_real_name ());
       if (!fullname)
-        fullname = g_strdup (nick);
+        {
+          fullname = g_strdup (nick);
+        }
     }
 
   gtk_entry_set_text (GTK_ENTRY (settings->entry_nick), nick ? nick : "");
@@ -367,10 +406,6 @@ empathy_account_widget_irc_new (McAccount *account)
 
   empathy_glade_connect (glade, settings,
       "vbox_irc_settings", "destroy", account_widget_irc_destroy_cb,
-      "entry_nick", "changed", account_widget_irc_entry_changed_cb,
-      "entry_password", "changed", account_widget_irc_entry_changed_cb,
-      "entry_fullname", "changed", account_widget_irc_entry_changed_cb,
-      "entry_quit_message", "changed", account_widget_irc_entry_changed_cb,
       "entry_nick", "focus-out-event", account_widget_irc_entry_focus_cb,
       "entry_fullname", "focus-out-event", account_widget_irc_entry_focus_cb,
       "entry_quit_message", "focus-out-event", account_widget_irc_entry_focus_cb,
