@@ -756,6 +756,34 @@ START_TEST (test_modify_both_files)
 }
 END_TEST
 
+START_TEST (test_empathy_irc_network_manager_find_network_by_address)
+{
+  EmpathyIrcNetworkManager *mgr;
+  EmpathyIrcNetwork *network;
+  struct server_t freenode_servers[] = {
+    { "irc.freenode.net", 6667, FALSE },
+    { "irc.eu.freenode.net", 6667, FALSE }};
+
+  mgr = empathy_irc_network_manager_new (GLOBAL_SAMPLE, NULL);
+
+  network = empathy_irc_network_manager_find_network_by_address (mgr,
+      "irc.freenode.net");
+  fail_if (network == NULL);
+  check_network (network, "Freenode", freenode_servers, 2);
+
+  network = empathy_irc_network_manager_find_network_by_address (mgr,
+      "irc.eu.freenode.net");
+  fail_if (network == NULL);
+  check_network (network, "Freenode", freenode_servers, 2);
+
+  network = empathy_irc_network_manager_find_network_by_address (mgr,
+      "unknown");
+  fail_if (network != NULL);
+
+  g_object_unref (mgr);
+}
+END_TEST
+
 TCase *
 make_empathy_irc_network_manager_tcase (void)
 {
@@ -767,5 +795,6 @@ make_empathy_irc_network_manager_tcase (void)
     tcase_add_test (tc, test_load_both_files);
     tcase_add_test (tc, test_modify_user_file);
     tcase_add_test (tc, test_modify_both_files);
+    tcase_add_test (tc, test_empathy_irc_network_manager_find_network_by_address);
     return tc;
 }
