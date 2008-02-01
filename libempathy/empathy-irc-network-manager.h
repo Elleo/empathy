@@ -80,6 +80,9 @@ empathy_irc_network_manager_get_networks (EmpathyIrcNetworkManager *manager);
 gboolean
 empathy_irc_network_manager_store (EmpathyIrcNetworkManager *manager);
 
+EmpathyIrcNetwork * empathy_irc_network_manager_find_network_by_address (
+    EmpathyIrcNetworkManager *manager, const gchar *address);
+
 G_END_DECLS
 
 #endif /* __EMPATHY_IRC_NETWORK_MANAGER_H__ */

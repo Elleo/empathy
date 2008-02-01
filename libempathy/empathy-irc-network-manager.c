@@ -639,3 +639,46 @@ irc_network_manager_file_save (EmpathyIrcNetworkManager *self)
 
   return TRUE;
 }
+
+static gboolean
+find_network_by_address (const gchar *id,
+                         EmpathyIrcNetwork *network,
+                         const gchar *address)
+{
+  GSList *servers, *l;
+  gboolean found = FALSE;
+
+  servers = empathy_irc_network_get_servers (network);
+
+  for (l = servers; l != NULL && !found; l = g_slist_next (l))
+    {
+      EmpathyIrcServer *server = l->data;
+      gchar *_address;
+
+      g_object_get (server, "address", &_address, NULL);
+      found = (_address != NULL && strcmp (address, _address) == 0);
+
+      g_free (_address);
+    }
+
+  g_slist_foreach (servers, (GFunc) g_object_unref, NULL);
+  g_slist_free (servers);
+
+  return found;
+}
+
+EmpathyIrcNetwork *
+empathy_irc_network_manager_find_network_by_address (EmpathyIrcNetworkManager *self,
+                                                     const gchar *address)
+{
+  EmpathyIrcNetworkManagerPrivate *priv =
+    EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
+  EmpathyIrcNetwork *network;
+
+  g_return_val_if_fail (address != NULL, NULL);
+
+  network = g_hash_table_find (priv->networks, (GHFunc) find_network_by_address,
+      address);
+
+  return network;
+}
