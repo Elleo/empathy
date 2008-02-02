@@ -785,11 +785,12 @@ START_TEST (test_empathy_irc_network_manager_find_network_by_address)
 }
 END_TEST
 
-START_TEST (test_no_modify)
+START_TEST (test_no_modify_with_empty_user_file)
 {
   EmpathyIrcNetworkManager *mgr;
   GSList *networks;
 
+  /* user don't have a networks file yet */
   g_unlink (USER_FILE);
 
   mgr = empathy_irc_network_manager_new (GLOBAL_SAMPLE, USER_FILE);
@@ -820,6 +821,6 @@ make_empathy_irc_network_manager_tcase (void)
     tcase_add_test (tc, test_modify_user_file);
     tcase_add_test (tc, test_modify_both_files);
     tcase_add_test (tc, test_empathy_irc_network_manager_find_network_by_address);
-    tcase_add_test (tc, test_no_modify);
+    tcase_add_test (tc, test_no_modify_with_empty_user_file);
     return tc;
 }
