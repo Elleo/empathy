@@ -346,6 +346,7 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
           srv = empathy_irc_server_new (server, port, ssl);
 
           empathy_irc_network_add_server (network, srv);
+          empathy_irc_network_manager_add (settings->network_manager, network);
 
           store = GTK_LIST_STORE (model);
           gtk_list_store_append (store, &iter);
