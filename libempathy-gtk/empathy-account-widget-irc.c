@@ -204,7 +204,6 @@ account_widget_irc_combobox_network_changed_cb (GtkWidget *combobox,
     }
   else
     {
-      /* TODO: change account setting */
       GSList *servers;
 
       servers = empathy_irc_network_get_servers (network);
@@ -213,14 +212,30 @@ account_widget_irc_combobox_network_changed_cb (GtkWidget *combobox,
           /* set the first server as CM server */
           EmpathyIrcServer *server = servers->data;
           gchar *address;
+          guint port;
+          gboolean ssl;
 
-          g_object_get (server, "address", &address, NULL);
+          g_object_get (server,
+              "address", &address,
+              "port", &port,
+              "ssl", &ssl,
+              NULL);
+
           empathy_debug (DEBUG_DOMAIN, "Setting server to %s", address);
           mc_account_set_param_string (settings->account, "server", address);
+          mc_account_set_param_int (settings->account, "port", port);
+          mc_account_set_param_boolean (settings->account, "use-ssl", ssl);
+          /* TODO: charset */
 
           g_free (address);
         }
-
+      else
+        {
+          /* No server. Unset values */
+          mc_account_unset_param (settings->account, "server");
+          mc_account_unset_param (settings->account, "port");
+          mc_account_unset_param (settings->account, "use-ssl");
+        }
       g_slist_foreach (servers, (GFunc) g_object_unref, NULL);
       g_slist_free (servers);
       g_object_unref (network);
