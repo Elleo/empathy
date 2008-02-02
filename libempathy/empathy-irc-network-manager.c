@@ -452,6 +452,7 @@ irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
       if (network != NULL)
         {
           network->dropped = TRUE;
+          network->user_defined = TRUE;
         }
        xmlFree (id);
       return;
@@ -462,7 +463,6 @@ irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
 
   name = xmlGetProp (node, "name");
   network = empathy_irc_network_new (name);
-  network->user_defined = user_defined;
   add_network (self, network, id);
   empathy_debug (DEBUG_DOMAIN, "add network %s (id %s)", name, id);
 
@@ -484,6 +484,7 @@ irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
       xmlFree (str);
     }
 
+  network->user_defined = user_defined;
   g_object_unref (network);
   xmlFree (name);
   xmlFree (id);
