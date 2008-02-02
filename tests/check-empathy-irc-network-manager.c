@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <glib/gstdio.h>
 
 #include <check.h>
 #include "check-helpers.h"
@@ -784,6 +785,29 @@ START_TEST (test_empathy_irc_network_manager_find_network_by_address)
 }
 END_TEST
 
+START_TEST (test_no_modify)
+{
+  EmpathyIrcNetworkManager *mgr;
+  GSList *networks;
+
+  g_unlink (USER_FILE);
+
+  mgr = empathy_irc_network_manager_new (GLOBAL_SAMPLE, USER_FILE);
+  empathy_irc_network_manager_store (mgr);
+  g_object_unref (mgr);
+
+  /* We didn't modify anything so USER_FILE should be empty */
+  mgr = empathy_irc_network_manager_new (NULL, USER_FILE);
+
+  networks = empathy_irc_network_manager_get_networks (mgr);
+  fail_if (g_slist_length (networks) != 0);
+
+  g_slist_foreach (networks, (GFunc) g_object_unref, NULL);
+  g_slist_free (networks);
+  g_object_unref (mgr);
+}
+END_TEST
+
 TCase *
 make_empathy_irc_network_manager_tcase (void)
 {
@@ -796,5 +820,6 @@ make_empathy_irc_network_manager_tcase (void)
     tcase_add_test (tc, test_modify_user_file);
     tcase_add_test (tc, test_modify_both_files);
     tcase_add_test (tc, test_empathy_irc_network_manager_find_network_by_address);
+    tcase_add_test (tc, test_no_modify);
     return tc;
 }
