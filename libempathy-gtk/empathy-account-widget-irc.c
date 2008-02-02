@@ -113,6 +113,7 @@ static void
 account_widget_irc_destroy_cb (GtkWidget *widget,
                                EmpathyAccountWidgetIrc *settings)
 {
+  empathy_irc_network_manager_store (settings->network_manager);
   g_object_unref (settings->network_manager);
   g_object_unref (settings->account);
   g_slice_free (EmpathyAccountWidgetIrc, settings);
@@ -250,9 +251,9 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
   gchar *fullname = NULL;
   gchar *quit_message= NULL;
   gchar *server = NULL;
-  gint port;
+  gint port = 6667;
   gchar *charset;
-  gboolean ssl;
+  gboolean ssl = FALSE;
   EmpathyIrcNetwork *network = NULL;
 
   mc_account_get_param_string (settings->account, "account", &nick);
@@ -291,50 +292,71 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
       quit_message ? quit_message : "");
 
   if (server != NULL)
-    network = empathy_irc_network_manager_find_network_by_address (
-        settings->network_manager, server);
-
-  if (network != NULL)
     {
-      gchar *name;
       GtkTreeIter iter;
-      gboolean valid;
       GtkTreeModel *model;
-      gboolean found = FALSE;
 
-      g_object_get (network, "name", &name, NULL);
-      empathy_debug (DEBUG_DOMAIN, "Account use network %s", name);
-
-      /* FIXME: is it the right way to do that ? */
       model = gtk_combo_box_get_model (
           GTK_COMBO_BOX (settings->combobox_network));
 
-      valid = gtk_tree_model_get_iter_first (model, &iter);
-      while (valid && !found)
+      network = empathy_irc_network_manager_find_network_by_address (
+          settings->network_manager, server);
+
+      if (network != NULL)
         {
-          EmpathyIrcNetwork *_network;
-          gtk_tree_model_get (model, &iter, COL_NETWORK_OBJ, &_network, NULL);
+          gchar *name;
+          gboolean valid;
+          gboolean found = FALSE;
 
-          if (network == _network)
+          g_object_get (network, "name", &name, NULL);
+          empathy_debug (DEBUG_DOMAIN, "Account use network %s", name);
+
+          /* FIXME: is it the right way to do that ? */
+
+          valid = gtk_tree_model_get_iter_first (model, &iter);
+          while (valid && !found)
             {
-              gtk_combo_box_set_active_iter (
-                  GTK_COMBO_BOX (settings->combobox_network), &iter);
-              found = TRUE;
+              EmpathyIrcNetwork *_network;
+              gtk_tree_model_get (model, &iter, COL_NETWORK_OBJ, &_network, NULL);
+
+              if (network == _network)
+                {
+                  gtk_combo_box_set_active_iter (
+                      GTK_COMBO_BOX (settings->combobox_network), &iter);
+                  found = TRUE;
+                }
+
+              valid = gtk_tree_model_iter_next (model, &iter);
+
+              if (_network != NULL)
+                g_object_unref (_network);
             }
+          g_assert (found);
 
-          valid = gtk_tree_model_iter_next (model, &iter);
-
-          if (_network != NULL)
-            g_object_unref (_network);
+          g_free (name);
         }
-      g_assert (found);
+      else
+        {
+          /* We don't have this network. Let's create it */
+          EmpathyIrcServer *srv;
+          GtkListStore *store;
 
-      g_free (name);
-    }
-  else
-    {
-      /* TODO  humm open the new network dialog ? */
-      g_print ("no network using this server: %s\n", server);
+          empathy_debug (DEBUG_DOMAIN, "Create a network %s", server);
+          network = empathy_irc_network_new (server);
+          srv = empathy_irc_server_new (server, port, ssl);
+
+          empathy_irc_network_add_server (network, srv);
+
+          store = GTK_LIST_STORE (model);
+          gtk_list_store_append (store, &iter);
+          gtk_list_store_set (store, &iter, COL_NETWORK_OBJ, network,
+              COL_NETWORK_NAME, server, -1);
+          gtk_combo_box_set_active_iter (
+              GTK_COMBO_BOX (settings->combobox_network), &iter);
+
+          g_object_unref (srv);
+          g_object_unref (network);
+        }
     }
 
   g_free (nick);
@@ -364,7 +386,7 @@ empathy_account_widget_irc_new (McAccount *account)
   /* FIXME: set the right paths */
   settings->network_manager = empathy_irc_network_manager_new (
       "/home/cassidy/gnome/empathy/tests/xml/default-irc-networks-sample.xml",
-      NULL);
+      "/home/cassidy/.gnome2/Empathy/irc-networks.xml");
 
   glade = empathy_glade_get_file ("empathy-account-widget-irc.glade",
       "vbox_irc_settings",
