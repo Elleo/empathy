@@ -205,6 +205,24 @@ account_widget_irc_combobox_network_changed_cb (GtkWidget *combobox,
   else
     {
       /* TODO: change account setting */
+      GSList *servers;
+
+      servers = empathy_irc_network_get_servers (network);
+      if (g_slist_length (servers) > 0)
+        {
+          /* set the first server as CM server */
+          EmpathyIrcServer *server = servers->data;
+          gchar *address;
+
+          g_object_get (server, "address", &address, NULL);
+          empathy_debug (DEBUG_DOMAIN, "Setting server to %s", address);
+          mc_account_set_param_string (settings->account, "server", address);
+
+          g_free (address);
+        }
+
+      g_slist_foreach (servers, (GFunc) g_object_unref, NULL);
+      g_slist_free (servers);
       g_object_unref (network);
     }
 }
@@ -220,7 +238,7 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
   gint port;
   gchar *charset;
   gboolean ssl;
-  EmpathyIrcNetwork *network;
+  EmpathyIrcNetwork *network = NULL;
 
   mc_account_get_param_string (settings->account, "account", &nick);
   mc_account_get_param_string (settings->account, "fullname", &fullname);
@@ -234,7 +252,10 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
   mc_account_get_param_boolean (settings->account, "use-ssl", &ssl);
 
   if (!nick)
-    nick = g_strdup (g_get_user_name ());
+    {
+      nick = g_strdup (g_get_user_name ());
+      mc_account_set_param_string (settings->account, "account", nick);
+    }
 
   if (!fullname)
     {
@@ -243,6 +264,7 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
         {
           fullname = g_strdup (nick);
         }
+      mc_account_set_param_string (settings->account, "fullname", fullname);
     }
 
   gtk_entry_set_text (GTK_ENTRY (settings->entry_nick), nick ? nick : "");
@@ -253,11 +275,12 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
   gtk_entry_set_text (GTK_ENTRY (settings->entry_quit_message),
       quit_message ? quit_message : "");
 
-  network = empathy_irc_network_manager_find_network_by_address (
-      settings->network_manager, server);
+  if (server != NULL)
+    network = empathy_irc_network_manager_find_network_by_address (
+        settings->network_manager, server);
+
   if (network != NULL)
     {
-      /* TODO select network */
       gchar *name;
       GtkTreeIter iter;
       gboolean valid;
