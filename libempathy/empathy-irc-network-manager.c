@@ -649,6 +649,9 @@ find_network_by_address (const gchar *id,
   GSList *servers, *l;
   gboolean found = FALSE;
 
+  if (network->dropped)
+    return FALSE;
+
   servers = empathy_irc_network_get_servers (network);
 
   for (l = servers; l != NULL && !found; l = g_slist_next (l))
