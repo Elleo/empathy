@@ -147,8 +147,7 @@ account_widget_irc_button_remove_clicked_cb (GtkWidget *button,
   g_object_get (network, "name", &name, NULL);
   empathy_debug (DEBUG_DOMAIN, "Remove network %s", name);
 
-  /* TODO: remove the network from the store */
-  //gtk_list_store_remove (GTK_LIST_STORE (model), &iter);
+  gtk_list_store_remove (GTK_LIST_STORE (model), &iter);
   empathy_irc_network_manager_remove (settings->network_manager, network);
 
   g_free (name);
@@ -209,6 +208,14 @@ account_widget_irc_sort (GtkTreeModel *model,
 }
 
 static void
+unset_server_values (EmpathyAccountWidgetIrc *settings)
+{
+  mc_account_unset_param (settings->account, "server");
+  mc_account_unset_param (settings->account, "port");
+  mc_account_unset_param (settings->account, "use-ssl");
+}
+
+static void
 account_widget_irc_combobox_network_changed_cb (GtkWidget *combobox,
                                                 EmpathyAccountWidgetIrc *settings)
 {
@@ -216,7 +223,12 @@ account_widget_irc_combobox_network_changed_cb (GtkWidget *combobox,
   GtkTreeModel *model;
   EmpathyIrcNetwork *network;
 
-  gtk_combo_box_get_active_iter (GTK_COMBO_BOX (combobox), &iter);
+  if (!gtk_combo_box_get_active_iter (GTK_COMBO_BOX (combobox), &iter))
+    {
+      unset_server_values (settings);
+      return;
+    }
+
   model = gtk_combo_box_get_model (GTK_COMBO_BOX (combobox));
   gtk_tree_model_get (model, &iter, COL_NETWORK_OBJ, &network, -1);
 
@@ -254,10 +266,9 @@ account_widget_irc_combobox_network_changed_cb (GtkWidget *combobox,
       else
         {
           /* No server. Unset values */
-          mc_account_unset_param (settings->account, "server");
-          mc_account_unset_param (settings->account, "port");
-          mc_account_unset_param (settings->account, "use-ssl");
+          unset_server_values (settings);
         }
+
       g_slist_foreach (servers, (GFunc) g_object_unref, NULL);
       g_slist_free (servers);
       g_object_unref (network);
