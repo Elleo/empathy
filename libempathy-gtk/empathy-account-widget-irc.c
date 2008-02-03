@@ -556,6 +556,13 @@ irc_network_dialog_destroy_cb (GtkWidget *widget,
   g_slice_free (IrcNetworkDialog, dialog);
 }
 
+static void
+irc_network_dialog_close_clicked_cb (GtkWidget *widget,
+                                     IrcNetworkDialog *dialog)
+{
+  gtk_widget_destroy (dialog->irc_network_dialog);
+}
+
 static IrcNetworkDialog *
 irc_network_dialog_new (McAccount *account,
                         EmpathyIrcNetwork *network)
@@ -586,6 +593,7 @@ irc_network_dialog_new (McAccount *account,
 
   empathy_glade_connect (glade, dialog,
       "irc_network_dialog", "destroy", irc_network_dialog_destroy_cb,
+      "button_close", "clicked", irc_network_dialog_close_clicked_cb,
       NULL);
 
   g_object_unref (glade);
