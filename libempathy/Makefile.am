@@ -153,6 +153,10 @@ stylesheetdir = $(datadir)/empathy
 stylesheet_DATA =		\
 	empathy-log-manager.xsl
 
+ircnetworksdir = $(datadir)/empathy
+ircnetworks_DATA =		\
+	irc-networks.xml
+
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libempathy.pc
 
@@ -162,7 +166,8 @@ EXTRA_DIST = 			\
 	empathy-filter.xml	\
 	tp-stream-engine.xml	\
 	$(stylesheet_DATA)	\
-	$(dtd_DATA)
+	$(dtd_DATA)		\
+	$(ircnetworks_DATA)
 
 CLEANFILES = 				\
 	$(BUILT_SOURCES)		\
