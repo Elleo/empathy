@@ -432,7 +432,7 @@ GtkWidget *
 empathy_account_widget_irc_new (McAccount *account)
 {
   EmpathyAccountWidgetIrc *settings;
-  gchar *dir, *user_file_with_path;
+  gchar *dir, *user_file_with_path, *global_file_with_path;
   GladeXML *glade;
   GtkListStore *store;
   GtkTreeIter iter;
@@ -451,10 +451,14 @@ empathy_account_widget_irc_new (McAccount *account)
   user_file_with_path = g_build_filename (dir, IRC_NETWORKS_FILENAME, NULL);
   g_free (dir);
 
+  global_file_with_path = g_build_filename (UNINSTALLED_IRC_DIR,
+      IRC_NETWORKS_FILENAME, NULL);
+
   settings->network_manager = empathy_irc_network_manager_new (
-      /* FIXME: set the right paths */
-      "/home/cassidy/gnome/empathy/tests/xml/default-irc-networks-sample.xml",
+      global_file_with_path,
       user_file_with_path);
+
+  g_free (global_file_with_path);
   g_free (user_file_with_path);
 
   glade = empathy_glade_get_file ("empathy-account-widget-irc.glade",
