@@ -41,7 +41,28 @@
 
 typedef struct {
   McAccount *account;
+  EmpathyIrcNetwork *network;
+
+  GtkWidget *irc_network_dialog;
+  GtkWidget *button_close;
+
+  GtkWidget *entry_network;
+  GtkWidget *combobox_charset;
+
+  GtkWidget *treeview_servers;
+  GtkWidget *button_add;
+  GtkWidget *button_remove;
+  GtkWidget *button_up;
+  GtkWidget *button_down;
+} IrcNetworkDialog;
+
+static IrcNetworkDialog * irc_network_dialog_new (McAccount *account,
+    EmpathyIrcNetwork *network);
+
+typedef struct {
+  McAccount *account;
   EmpathyIrcNetworkManager *network_manager;
+  IrcNetworkDialog *network_dialog;
 
   GtkWidget *vbox_settings;
 
@@ -124,7 +145,11 @@ account_widget_irc_button_network_clicked_cb (GtkWidget *button,
                                               EmpathyAccountWidgetIrc *settings)
 {
   g_print ("edit network\n");
-  //empathy_irc_network_dialog_show ();
+  if (settings->network_dialog == NULL)
+    {
+      settings->network_dialog = irc_network_dialog_new (settings->account,
+          NULL);
+    }
 }
 
 static void
@@ -415,6 +440,7 @@ empathy_account_widget_irc_new (McAccount *account)
 
   settings = g_slice_new0 (EmpathyAccountWidgetIrc);
   settings->account = g_object_ref (account);
+  settings->network_dialog = NULL;
 
   /* FIXME: set the right paths */
   settings->network_manager = empathy_irc_network_manager_new (
@@ -516,4 +542,55 @@ empathy_account_widget_irc_new (McAccount *account)
   g_object_unref (size_group);
 
   return settings->vbox_settings;
+}
+
+static void
+irc_network_dialog_destroy_cb (GtkWidget *widget,
+                               IrcNetworkDialog *dialog)
+{
+  g_object_unref (dialog->account);
+
+  if (dialog->network != NULL)
+    g_object_unref (dialog->network);
+
+  g_slice_free (IrcNetworkDialog, dialog);
+}
+
+static IrcNetworkDialog *
+irc_network_dialog_new (McAccount *account,
+                        EmpathyIrcNetwork *network)
+{
+  IrcNetworkDialog *dialog;
+  GladeXML *glade;
+
+  dialog = g_slice_new0 (IrcNetworkDialog);
+  dialog->account = g_object_ref (account);
+
+  dialog->network = network;
+  if (dialog->network != NULL)
+    g_object_ref (dialog->network);
+
+  glade = empathy_glade_get_file ("empathy-account-widget-irc.glade",
+      "irc_network_dialog",
+      NULL,
+      "irc_network_dialog", &dialog->irc_network_dialog,
+      "button_close", &dialog->button_close,
+      "entry_network", &dialog->entry_network,
+      "combobox_charset", &dialog->combobox_charset,
+      "treeview_servers", &dialog->treeview_servers,
+      "button_add", &dialog->button_add,
+      "button_remove", &dialog->button_remove,
+      "button_up", &dialog->button_up,
+      "button_down", &dialog->button_down,
+      NULL);
+
+  empathy_glade_connect (glade, dialog,
+      "irc_network_dialog", "destroy", irc_network_dialog_destroy_cb,
+      NULL);
+
+  g_object_unref (glade);
+
+  gtk_widget_show_all (dialog->irc_network_dialog);
+
+  return dialog;
 }
