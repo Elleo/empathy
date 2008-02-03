@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
@@ -38,6 +39,8 @@
 #include "empathy-ui-utils.h"
 
 #define DEBUG_DOMAIN "AccountWidgetIRC"
+
+#define IRC_NETWORKS_FILENAME "irc-networks.xml"
 
 typedef struct {
   McAccount *account;
@@ -429,6 +432,7 @@ GtkWidget *
 empathy_account_widget_irc_new (McAccount *account)
 {
   EmpathyAccountWidgetIrc *settings;
+  gchar *dir, *user_file_with_path;
   GladeXML *glade;
   GtkListStore *store;
   GtkTreeIter iter;
@@ -442,10 +446,16 @@ empathy_account_widget_irc_new (McAccount *account)
   settings->account = g_object_ref (account);
   settings->network_dialog = NULL;
 
-  /* FIXME: set the right paths */
+  dir = g_build_filename (g_get_home_dir (), ".gnome2", PACKAGE_NAME, NULL);
+  g_mkdir_with_parents (dir, S_IRUSR | S_IWUSR | S_IXUSR);
+  user_file_with_path = g_build_filename (dir, IRC_NETWORKS_FILENAME, NULL);
+  g_free (dir);
+
   settings->network_manager = empathy_irc_network_manager_new (
+      /* FIXME: set the right paths */
       "/home/cassidy/gnome/empathy/tests/xml/default-irc-networks-sample.xml",
-      "/home/cassidy/.gnome2/Empathy/irc-networks.xml");
+      user_file_with_path);
+  g_free (user_file_with_path);
 
   glade = empathy_glade_get_file ("empathy-account-widget-irc.glade",
       "vbox_irc_settings",
