@@ -147,12 +147,25 @@ static void
 account_widget_irc_button_network_clicked_cb (GtkWidget *button,
                                               EmpathyAccountWidgetIrc *settings)
 {
-  g_print ("edit network\n");
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  EmpathyIrcNetwork *network;
+
+  gtk_combo_box_get_active_iter (GTK_COMBO_BOX (settings->combobox_network),
+      &iter);
+  model = gtk_combo_box_get_model (GTK_COMBO_BOX (settings->combobox_network));
+  gtk_tree_model_get (model, &iter, COL_NETWORK_OBJ, &network, -1);
+
+  if (network == NULL)
+    return;
+
   if (settings->network_dialog == NULL)
     {
       settings->network_dialog = irc_network_dialog_new (settings->account,
-          NULL);
+          network);
     }
+
+  g_object_unref (network);
 }
 
 static void
@@ -563,9 +576,7 @@ irc_network_dialog_destroy_cb (GtkWidget *widget,
                                IrcNetworkDialog *dialog)
 {
   g_object_unref (dialog->account);
-
-  if (dialog->network != NULL)
-    g_object_unref (dialog->network);
+  g_object_unref (dialog->network);
 
   g_slice_free (IrcNetworkDialog, dialog);
 }
@@ -577,19 +588,70 @@ irc_network_dialog_close_clicked_cb (GtkWidget *widget,
   gtk_widget_destroy (dialog->irc_network_dialog);
 }
 
+enum {
+  COL_SRV_OBJ,
+  COL_ADR,
+  COL_PORT,
+  COL_SSL
+};
+
+static void
+irc_network_dialog_setup (IrcNetworkDialog *dialog)
+{
+  gchar *name;
+  GSList *servers, *l;
+  GtkListStore *store;
+
+  g_object_get (dialog->network, "name", &name, NULL);
+  gtk_entry_set_text (GTK_ENTRY (dialog->entry_network), name);
+
+  store = GTK_LIST_STORE (gtk_tree_view_get_model (
+        GTK_TREE_VIEW (dialog->treeview_servers)));
+
+  servers = empathy_irc_network_get_servers (dialog->network);
+  for (l = servers; l != NULL; l = g_slist_next (l))
+    {
+      EmpathyIrcServer *server = l->data;
+      GtkTreeIter iter;
+      gchar *address;
+      guint port;
+      gboolean ssl;
+
+      g_object_get (server,
+          "address", &address,
+          "port", &port,
+          "ssl", &ssl,
+          NULL);
+
+      gtk_list_store_append (store, &iter);
+      gtk_list_store_set (store, &iter, COL_SRV_OBJ, server,
+          COL_ADR, address, COL_PORT, port, COL_SSL, ssl, -1);
+
+      g_free (address);
+    }
+
+  /* TODO charset */
+
+  g_slist_foreach (servers, (GFunc) g_object_unref, NULL);
+  g_slist_free (servers);
+  g_free (name);
+}
+
 static IrcNetworkDialog *
 irc_network_dialog_new (McAccount *account,
                         EmpathyIrcNetwork *network)
 {
   IrcNetworkDialog *dialog;
   GladeXML *glade;
+  GtkListStore *store;
+
+  g_return_val_if_fail (network != NULL, NULL);
 
   dialog = g_slice_new0 (IrcNetworkDialog);
   dialog->account = g_object_ref (account);
 
   dialog->network = network;
-  if (dialog->network != NULL)
-    g_object_ref (dialog->network);
+  g_object_ref (dialog->network);
 
   glade = empathy_glade_get_file ("empathy-account-widget-irc.glade",
       "irc_network_dialog",
@@ -604,6 +666,13 @@ irc_network_dialog_new (McAccount *account,
       "button_up", &dialog->button_up,
       "button_down", &dialog->button_down,
       NULL);
+
+  store = gtk_list_store_new (4, G_TYPE_OBJECT, G_TYPE_STRING,
+      G_TYPE_UINT, G_TYPE_BOOLEAN);
+  gtk_tree_view_set_model (GTK_TREE_VIEW (dialog->treeview_servers),
+      GTK_TREE_MODEL (store));
+
+  irc_network_dialog_setup (dialog);
 
   empathy_glade_connect (glade, dialog,
       "irc_network_dialog", "destroy", irc_network_dialog_destroy_cb,
