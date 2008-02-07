@@ -644,6 +644,7 @@ irc_network_dialog_new (McAccount *account,
   IrcNetworkDialog *dialog;
   GladeXML *glade;
   GtkListStore *store;
+  GtkCellRenderer *renderer;
 
   g_return_val_if_fail (network != NULL, NULL);
 
@@ -671,6 +672,25 @@ irc_network_dialog_new (McAccount *account,
       G_TYPE_UINT, G_TYPE_BOOLEAN);
   gtk_tree_view_set_model (GTK_TREE_VIEW (dialog->treeview_servers),
       GTK_TREE_MODEL (store));
+  g_object_unref (store);
+
+  renderer = gtk_cell_renderer_text_new ();
+  gtk_tree_view_insert_column_with_attributes (
+      GTK_TREE_VIEW (dialog->treeview_servers),
+      -1, _("Server"), renderer, "text", COL_ADR,
+      NULL);
+
+  renderer = gtk_cell_renderer_text_new ();
+  gtk_tree_view_insert_column_with_attributes (
+      GTK_TREE_VIEW (dialog->treeview_servers),
+      -1, _("Port"), renderer, "text", COL_PORT,
+      NULL);
+
+  renderer = gtk_cell_renderer_toggle_new ();
+  gtk_tree_view_insert_column_with_attributes (
+      GTK_TREE_VIEW (dialog->treeview_servers),
+      -1, _("SSL"), renderer, "active", COL_SSL,
+      NULL);
 
   irc_network_dialog_setup (dialog);
 
