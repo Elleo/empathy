@@ -637,6 +637,91 @@ irc_network_dialog_setup (IrcNetworkDialog *dialog)
   g_free (name);
 }
 
+static void
+irc_network_dialog_address_edited_cb (GtkCellRendererText *renderer,
+                                      gchar *path,
+                                      gchar *new_text,
+                                      IrcNetworkDialog *dialog)
+{
+  EmpathyIrcServer *server;
+  GtkTreeModel *model;
+  GtkTreePath  *treepath;
+  GtkTreeIter iter;
+
+  model = gtk_tree_view_get_model (GTK_TREE_VIEW (dialog->treeview_servers));
+  treepath = gtk_tree_path_new_from_string (path);
+  gtk_tree_model_get_iter (model, &iter, treepath);
+  gtk_tree_model_get (model, &iter,
+      COL_SRV_OBJ, &server,
+      -1);
+  gtk_list_store_set (GTK_LIST_STORE (model), &iter,
+      COL_ADR, new_text,
+      -1);
+
+  g_object_set (server, "address", new_text, NULL);
+
+  gtk_tree_path_free (treepath);
+  g_object_unref (server);
+}
+
+static void
+irc_network_dialog_port_edited_cb (GtkCellRendererText *renderer,
+                                   gchar *path,
+                                   gchar *new_text,
+                                   IrcNetworkDialog *dialog)
+{
+  EmpathyIrcServer *server;
+  GtkTreeModel *model;
+  GtkTreePath  *treepath;
+  GtkTreeIter iter;
+  guint port;
+
+  port = strtoul (new_text, NULL, 10);
+  model = gtk_tree_view_get_model (GTK_TREE_VIEW (dialog->treeview_servers));
+  treepath = gtk_tree_path_new_from_string (path);
+  gtk_tree_model_get_iter (model, &iter, treepath);
+  gtk_tree_model_get (model, &iter,
+      COL_SRV_OBJ, &server,
+      -1);
+  gtk_list_store_set (GTK_LIST_STORE (model), &iter,
+      COL_PORT, port,
+      -1);
+
+  g_object_set (server, "port", port, NULL);
+
+  gtk_tree_path_free (treepath);
+  g_object_unref (server);
+}
+
+static void
+irc_network_dialog_ssl_toggled_cb (GtkCellRendererText *renderer,
+                                   gchar *path,
+                                   IrcNetworkDialog *dialog)
+{
+  EmpathyIrcServer *server;
+  GtkTreeModel *model;
+  GtkTreePath  *treepath;
+  GtkTreeIter iter;
+  gboolean ssl;
+
+  model = gtk_tree_view_get_model (GTK_TREE_VIEW (dialog->treeview_servers));
+  treepath = gtk_tree_path_new_from_string (path);
+  gtk_tree_model_get_iter (model, &iter, treepath);
+  gtk_tree_model_get (model, &iter,
+      COL_SRV_OBJ, &server,
+      COL_SSL, &ssl,
+      -1);
+  ssl = !ssl;
+  gtk_list_store_set (GTK_LIST_STORE (model), &iter,
+      COL_SSL, ssl,
+      -1);
+
+  g_object_set (server, "ssl", ssl, NULL);
+
+  gtk_tree_path_free (treepath);
+  g_object_unref (server);
+}
+
 static IrcNetworkDialog *
 irc_network_dialog_new (McAccount *account,
                         EmpathyIrcNetwork *network)
@@ -645,6 +730,7 @@ irc_network_dialog_new (McAccount *account,
   GladeXML *glade;
   GtkListStore *store;
   GtkCellRenderer *renderer;
+  GtkAdjustment *adjustment;
 
   g_return_val_if_fail (network != NULL, NULL);
 
@@ -674,19 +760,36 @@ irc_network_dialog_new (McAccount *account,
       GTK_TREE_MODEL (store));
   g_object_unref (store);
 
+  /* address */
   renderer = gtk_cell_renderer_text_new ();
+  g_object_set (renderer, "editable", TRUE, NULL);
+  g_signal_connect (renderer, "edited",
+      G_CALLBACK (irc_network_dialog_address_edited_cb), dialog);
   gtk_tree_view_insert_column_with_attributes (
       GTK_TREE_VIEW (dialog->treeview_servers),
       -1, _("Server"), renderer, "text", COL_ADR,
       NULL);
 
-  renderer = gtk_cell_renderer_text_new ();
+  /* port */
+  adjustment = (GtkAdjustment *) gtk_adjustment_new (6667, 1, G_MAXUINT16,
+      1, 10, 0);
+  renderer = gtk_cell_renderer_spin_new ();
+  g_object_set (renderer,
+      "editable", TRUE, 
+      "adjustment", adjustment,
+      NULL);
+  g_signal_connect (renderer, "edited",
+      G_CALLBACK (irc_network_dialog_port_edited_cb), dialog);
   gtk_tree_view_insert_column_with_attributes (
       GTK_TREE_VIEW (dialog->treeview_servers),
       -1, _("Port"), renderer, "text", COL_PORT,
       NULL);
 
+  /* SSL */
   renderer = gtk_cell_renderer_toggle_new ();
+  g_object_set (renderer, "activatable", TRUE, NULL);
+  g_signal_connect (renderer, "toggled",
+      G_CALLBACK (irc_network_dialog_ssl_toggled_cb), dialog);
   gtk_tree_view_insert_column_with_attributes (
       GTK_TREE_VIEW (dialog->treeview_servers),
       -1, _("SSL"), renderer, "active", COL_SSL,
