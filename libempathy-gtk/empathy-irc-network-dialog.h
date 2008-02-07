@@ -1,0 +1,54 @@
+/*
+ * Copyright (C) 2007-2008 Guillaume Desmottes
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * Authors: Guillaume Desmottes <gdesmott@gnome.org>
+ */
+
+#ifndef __EMPATHY_IRC_NETWORK_DIALOG_H__
+#define __EMPATHY_IRC_NETWORK_DIALOG_H__
+
+#include <gtk/gtkwidget.h>
+#include <libmissioncontrol/mc-account.h>
+
+#include <libempathy/empathy-irc-network.h>
+
+G_BEGIN_DECLS
+
+typedef struct {
+  McAccount *account;
+  EmpathyIrcNetwork *network;
+
+  GtkWidget *irc_network_dialog;
+  GtkWidget *button_close;
+
+  GtkWidget *entry_network;
+  GtkWidget *combobox_charset;
+
+  GtkWidget *treeview_servers;
+  GtkWidget *button_add;
+  GtkWidget *button_remove;
+  GtkWidget *button_up;
+  GtkWidget *button_down;
+} EmpathyIrcNetworkDialog;
+
+EmpathyIrcNetworkDialog *
+irc_network_dialog_new (McAccount *account, EmpathyIrcNetwork *network,
+    GtkWidget *parent);
+
+G_END_DECLS
+
+#endif /* __EMPATHY_IRC_NETWORK_DIALOG_H__ */
