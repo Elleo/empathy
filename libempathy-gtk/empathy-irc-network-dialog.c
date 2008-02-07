@@ -41,6 +41,23 @@
 
 #define DEBUG_DOMAIN "AccountWidgetIRC"
 
+typedef struct {
+  McAccount *account;
+  EmpathyIrcNetwork *network;
+
+  GtkWidget *irc_network_dialog;
+  GtkWidget *button_close;
+
+  GtkWidget *entry_network;
+  GtkWidget *combobox_charset;
+
+  GtkWidget *treeview_servers;
+  GtkWidget *button_add;
+  GtkWidget *button_remove;
+  GtkWidget *button_up;
+  GtkWidget *button_down;
+} EmpathyIrcNetworkDialog;
+
 static void
 irc_network_dialog_destroy_cb (GtkWidget *widget,
                                EmpathyIrcNetworkDialog *dialog)
@@ -273,12 +290,12 @@ irc_network_dialog_selection_changed_cb (GtkTreeSelection  *treeselection,
   g_print ("selection changed\n");
 }
 
-EmpathyIrcNetworkDialog *
-irc_network_dialog_new (McAccount *account,
-                        EmpathyIrcNetwork *network,
-                        GtkWidget *parent)
+GtkWidget *
+irc_network_dialog_show (McAccount *account,
+                         EmpathyIrcNetwork *network,
+                         GtkWidget *parent)
 {
-  EmpathyIrcNetworkDialog *dialog;
+  static EmpathyIrcNetworkDialog *dialog = NULL;
   GladeXML *glade;
   GtkListStore *store;
   GtkCellRenderer *renderer;
@@ -286,6 +303,14 @@ irc_network_dialog_new (McAccount *account,
   GtkTreeSelection *selection;
 
   g_return_val_if_fail (network != NULL, NULL);
+
+  if (dialog != NULL)
+    {
+      gtk_window_present (GTK_WINDOW (dialog->irc_network_dialog));
+      /* TODO: set the right network */
+
+      return dialog->irc_network_dialog;
+    }
 
   dialog = g_slice_new0 (EmpathyIrcNetworkDialog);
   dialog->account = g_object_ref (account);
@@ -364,11 +389,14 @@ irc_network_dialog_new (McAccount *account,
       "button_down", "clicked", irc_network_dialog_button_up_down_clicked_cb,
       NULL);
 
+  g_object_unref (glade);
+
+  g_object_add_weak_pointer (G_OBJECT (dialog->irc_network_dialog),
+      (gpointer) &dialog);
+
   g_signal_connect (selection, "changed",
       G_CALLBACK (irc_network_dialog_selection_changed_cb),
       dialog);
-
-  g_object_unref (glade);
 
   gtk_window_set_transient_for (GTK_WINDOW (dialog->irc_network_dialog),
       GTK_WINDOW (parent));
@@ -376,5 +404,5 @@ irc_network_dialog_new (McAccount *account,
 
   gtk_widget_show_all (dialog->irc_network_dialog);
 
-  return dialog;
+  return dialog->irc_network_dialog;
 }

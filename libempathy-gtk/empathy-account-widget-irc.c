@@ -46,7 +46,6 @@
 typedef struct {
   McAccount *account;
   EmpathyIrcNetworkManager *network_manager;
-  EmpathyIrcNetworkDialog *network_dialog;
 
   GtkWidget *vbox_settings;
 
@@ -131,6 +130,7 @@ account_widget_irc_button_network_clicked_cb (GtkWidget *button,
   GtkTreeIter iter;
   GtkTreeModel *model;
   EmpathyIrcNetwork *network;
+  GtkWindow *window;
 
   gtk_combo_box_get_active_iter (GTK_COMBO_BOX (settings->combobox_network),
       &iter);
@@ -140,14 +140,8 @@ account_widget_irc_button_network_clicked_cb (GtkWidget *button,
   if (network == NULL)
     return;
 
-  if (settings->network_dialog == NULL)
-    {
-      GtkWindow *window;
-
-      window = empathy_get_toplevel_window (settings->vbox_settings);
-      settings->network_dialog = irc_network_dialog_new (settings->account,
-          network, GTK_WIDGET (window));
-    }
+  window = empathy_get_toplevel_window (settings->vbox_settings);
+  irc_network_dialog_show (settings->account, network, GTK_WIDGET (window));
 
   g_object_unref (network);
 }
@@ -467,7 +461,6 @@ empathy_account_widget_irc_new (McAccount *account)
 
   settings = g_slice_new0 (EmpathyAccountWidgetIrc);
   settings->account = g_object_ref (account);
-  settings->network_dialog = NULL;
 
   dir = g_build_filename (g_get_home_dir (), ".gnome2", PACKAGE_NAME, NULL);
   g_mkdir_with_parents (dir, S_IRUSR | S_IWUSR | S_IXUSR);

@@ -28,25 +28,8 @@
 
 G_BEGIN_DECLS
 
-typedef struct {
-  McAccount *account;
-  EmpathyIrcNetwork *network;
-
-  GtkWidget *irc_network_dialog;
-  GtkWidget *button_close;
-
-  GtkWidget *entry_network;
-  GtkWidget *combobox_charset;
-
-  GtkWidget *treeview_servers;
-  GtkWidget *button_add;
-  GtkWidget *button_remove;
-  GtkWidget *button_up;
-  GtkWidget *button_down;
-} EmpathyIrcNetworkDialog;
-
-EmpathyIrcNetworkDialog *
-irc_network_dialog_new (McAccount *account, EmpathyIrcNetwork *network,
+GtkWidget *
+irc_network_dialog_show (McAccount *account, EmpathyIrcNetwork *network,
     GtkWidget *parent);
 
 G_END_DECLS
