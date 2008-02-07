@@ -390,7 +390,7 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
           while (valid && !found)
             {
               EmpathyIrcNetwork *_network;
-              gtk_tree_model_get (model, &iter, COL_NETWORK_OBJ, &_network, NULL);
+              gtk_tree_model_get (model, &iter, COL_NETWORK_OBJ, &_network, -1);
 
               if (network == _network)
                 {
