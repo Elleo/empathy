@@ -596,6 +596,28 @@ enum {
 };
 
 static void
+add_server_to_store (GtkListStore *store,
+                     EmpathyIrcServer *server)
+{
+  GtkTreeIter iter;
+  gchar *address;
+  guint port;
+  gboolean ssl;
+
+  g_object_get (server,
+      "address", &address,
+      "port", &port,
+      "ssl", &ssl,
+      NULL);
+
+  gtk_list_store_append (store, &iter);
+  gtk_list_store_set (store, &iter, COL_SRV_OBJ, server,
+      COL_ADR, address, COL_PORT, port, COL_SSL, ssl, -1);
+
+  g_free (address);
+}
+
+static void
 irc_network_dialog_setup (IrcNetworkDialog *dialog)
 {
   gchar *name;
@@ -612,22 +634,8 @@ irc_network_dialog_setup (IrcNetworkDialog *dialog)
   for (l = servers; l != NULL; l = g_slist_next (l))
     {
       EmpathyIrcServer *server = l->data;
-      GtkTreeIter iter;
-      gchar *address;
-      guint port;
-      gboolean ssl;
 
-      g_object_get (server,
-          "address", &address,
-          "port", &port,
-          "ssl", &ssl,
-          NULL);
-
-      gtk_list_store_append (store, &iter);
-      gtk_list_store_set (store, &iter, COL_SRV_OBJ, server,
-          COL_ADR, address, COL_PORT, port, COL_SSL, ssl, -1);
-
-      g_free (address);
+      add_server_to_store (store, server);
     }
 
   /* TODO charset */
@@ -736,6 +744,65 @@ irc_network_dialog_network_focus_cb (GtkWidget *widget,
   return FALSE;
 }
 
+static void
+irc_network_dialog_button_add_clicked_cb (GtkWidget *widget,
+                                          IrcNetworkDialog *dialog)
+{
+  EmpathyIrcServer *server;
+  GtkListStore *store;
+
+  store = GTK_LIST_STORE (gtk_tree_view_get_model (
+        GTK_TREE_VIEW (dialog->treeview_servers)));
+
+  server = empathy_irc_server_new (_("new server"), 6667, FALSE);
+  empathy_irc_network_add_server (dialog->network, server);
+  add_server_to_store (store, server);
+
+  /* TODO: Set the focus in the address cell of this new server */
+
+  g_object_unref (server);
+}
+
+static void
+irc_network_dialog_button_remove_clicked_cb (GtkWidget *widget,
+                                             IrcNetworkDialog *dialog)
+{
+  GtkTreeSelection *selection;
+  GtkTreeModel *model;
+  GtkTreeIter iter;
+  EmpathyIrcServer *server;
+
+  selection = gtk_tree_view_get_selection (
+      GTK_TREE_VIEW (dialog->treeview_servers));
+
+  if (!gtk_tree_selection_get_selected (selection, &model, &iter))
+    return;
+
+  gtk_tree_model_get (model, &iter, COL_SRV_OBJ, &server, -1);
+
+  gtk_list_store_remove (GTK_LIST_STORE (model), &iter);
+  empathy_irc_network_remove_server (dialog->network, server);
+
+  g_object_unref (server);
+}
+
+static void
+irc_network_dialog_button_up_down_clicked_cb (GtkWidget *widget,
+                                              IrcNetworkDialog *dialog)
+{
+  /* TODO */
+  g_print ("up-down\n");
+}
+
+static void
+irc_network_dialog_selection_changed_cb (GtkTreeSelection  *treeselection,
+                                         IrcNetworkDialog *dialog)
+{
+  /* TODO: sensitive / unsensitive buttons according current
+   * selection/configuration */
+  g_print ("selection changed\n");
+}
+
 static IrcNetworkDialog *
 irc_network_dialog_new (McAccount *account,
                         EmpathyIrcNetwork *network)
@@ -745,6 +812,7 @@ irc_network_dialog_new (McAccount *account,
   GtkListStore *store;
   GtkCellRenderer *renderer;
   GtkAdjustment *adjustment;
+  GtkTreeSelection *selection;
 
   g_return_val_if_fail (network != NULL, NULL);
 
@@ -809,15 +877,26 @@ irc_network_dialog_new (McAccount *account,
       -1, _("SSL"), renderer, "active", COL_SSL,
       NULL);
 
+  selection = gtk_tree_view_get_selection (
+      GTK_TREE_VIEW (dialog->treeview_servers));
+  gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
+
   irc_network_dialog_setup (dialog);
 
   empathy_glade_connect (glade, dialog,
       "irc_network_dialog", "destroy", irc_network_dialog_destroy_cb,
       "button_close", "clicked", irc_network_dialog_close_clicked_cb,
       "entry_network", "focus-out-event", irc_network_dialog_network_focus_cb,
+      "button_add", "clicked", irc_network_dialog_button_add_clicked_cb,
+      "button_remove", "clicked", irc_network_dialog_button_remove_clicked_cb,
+      "button_up", "clicked", irc_network_dialog_button_up_down_clicked_cb,
+      "button_down", "clicked", irc_network_dialog_button_up_down_clicked_cb,
       NULL);
 
-  /* TODO: charset add/remove up/down */
+  g_signal_connect (selection, "changed",
+      G_CALLBACK (irc_network_dialog_selection_changed_cb),
+      dialog);
+
   g_object_unref (glade);
 
   gtk_widget_show_all (dialog->irc_network_dialog);
