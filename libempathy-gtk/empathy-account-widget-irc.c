@@ -60,7 +60,7 @@ typedef struct {
 } IrcNetworkDialog;
 
 static IrcNetworkDialog * irc_network_dialog_new (McAccount *account,
-    EmpathyIrcNetwork *network);
+    EmpathyIrcNetwork *network, GtkWidget *parent);
 
 typedef struct {
   McAccount *account;
@@ -161,8 +161,11 @@ account_widget_irc_button_network_clicked_cb (GtkWidget *button,
 
   if (settings->network_dialog == NULL)
     {
+      GtkWindow *window;
+
+      window = empathy_get_toplevel_window (settings->vbox_settings);
       settings->network_dialog = irc_network_dialog_new (settings->account,
-          network);
+          network, GTK_WIDGET (window));
     }
 
   g_object_unref (network);
@@ -813,7 +816,8 @@ irc_network_dialog_selection_changed_cb (GtkTreeSelection  *treeselection,
 
 static IrcNetworkDialog *
 irc_network_dialog_new (McAccount *account,
-                        EmpathyIrcNetwork *network)
+                        EmpathyIrcNetwork *network,
+                        GtkWidget *parent)
 {
   IrcNetworkDialog *dialog;
   GladeXML *glade;
@@ -906,6 +910,10 @@ irc_network_dialog_new (McAccount *account,
       dialog);
 
   g_object_unref (glade);
+
+  gtk_window_set_transient_for (GTK_WINDOW (dialog->irc_network_dialog),
+      GTK_WINDOW (parent));
+  gtk_window_set_modal (GTK_WINDOW (dialog->irc_network_dialog), TRUE);
 
   gtk_widget_show_all (dialog->irc_network_dialog);
 
