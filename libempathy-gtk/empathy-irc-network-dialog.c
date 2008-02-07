@@ -45,7 +45,7 @@ typedef struct {
   McAccount *account;
   EmpathyIrcNetwork *network;
 
-  GtkWidget *irc_network_dialog;
+  GtkWidget *dialog;
   GtkWidget *button_close;
 
   GtkWidget *entry_network;
@@ -72,7 +72,7 @@ static void
 irc_network_dialog_close_clicked_cb (GtkWidget *widget,
                                      EmpathyIrcNetworkDialog *dialog)
 {
-  gtk_widget_destroy (dialog->irc_network_dialog);
+  gtk_widget_destroy (dialog->dialog);
 }
 
 enum {
@@ -306,10 +306,10 @@ irc_network_dialog_show (McAccount *account,
 
   if (dialog != NULL)
     {
-      gtk_window_present (GTK_WINDOW (dialog->irc_network_dialog));
+      gtk_window_present (GTK_WINDOW (dialog->dialog));
       /* TODO: set the right network */
 
-      return dialog->irc_network_dialog;
+      return dialog->dialog;
     }
 
   dialog = g_slice_new0 (EmpathyIrcNetworkDialog);
@@ -321,7 +321,7 @@ irc_network_dialog_show (McAccount *account,
   glade = empathy_glade_get_file ("empathy-account-widget-irc.glade",
       "irc_network_dialog",
       NULL,
-      "irc_network_dialog", &dialog->irc_network_dialog,
+      "irc_network_dialog", &dialog->dialog,
       "button_close", &dialog->button_close,
       "entry_network", &dialog->entry_network,
       "combobox_charset", &dialog->combobox_charset,
@@ -391,18 +391,18 @@ irc_network_dialog_show (McAccount *account,
 
   g_object_unref (glade);
 
-  g_object_add_weak_pointer (G_OBJECT (dialog->irc_network_dialog),
+  g_object_add_weak_pointer (G_OBJECT (dialog->dialog),
       (gpointer) &dialog);
 
   g_signal_connect (selection, "changed",
       G_CALLBACK (irc_network_dialog_selection_changed_cb),
       dialog);
 
-  gtk_window_set_transient_for (GTK_WINDOW (dialog->irc_network_dialog),
+  gtk_window_set_transient_for (GTK_WINDOW (dialog->dialog),
       GTK_WINDOW (parent));
-  gtk_window_set_modal (GTK_WINDOW (dialog->irc_network_dialog), TRUE);
+  gtk_window_set_modal (GTK_WINDOW (dialog->dialog), TRUE);
 
-  gtk_widget_show_all (dialog->irc_network_dialog);
+  gtk_widget_show_all (dialog->dialog);
 
-  return dialog->irc_network_dialog;
+  return dialog->dialog;
 }
