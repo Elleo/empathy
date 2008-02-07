@@ -722,6 +722,20 @@ irc_network_dialog_ssl_toggled_cb (GtkCellRendererText *renderer,
   g_object_unref (server);
 }
 
+static gboolean
+irc_network_dialog_network_focus_cb (GtkWidget *widget,
+                                     GdkEventFocus *event,
+                                     IrcNetworkDialog *dialog)
+{
+  const gchar *str;
+
+  str = gtk_entry_get_text (GTK_ENTRY (widget));
+
+  g_object_set (dialog->network, "name", str, NULL);
+
+  return FALSE;
+}
+
 static IrcNetworkDialog *
 irc_network_dialog_new (McAccount *account,
                         EmpathyIrcNetwork *network)
@@ -800,8 +814,10 @@ irc_network_dialog_new (McAccount *account,
   empathy_glade_connect (glade, dialog,
       "irc_network_dialog", "destroy", irc_network_dialog_destroy_cb,
       "button_close", "clicked", irc_network_dialog_close_clicked_cb,
+      "entry_network", "focus-out-event", irc_network_dialog_network_focus_cb,
       NULL);
 
+  /* TODO: charset add/remove up/down */
   g_object_unref (glade);
 
   gtk_widget_show_all (dialog->irc_network_dialog);
