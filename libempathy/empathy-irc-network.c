@@ -149,6 +149,7 @@ empathy_irc_network_finalize (GObject *object)
 
   g_slist_free (priv->servers);
   g_free (priv->name);
+  g_free (priv->charset);
 
   G_OBJECT_CLASS (empathy_irc_network_parent_class)->finalize (object);
 }
