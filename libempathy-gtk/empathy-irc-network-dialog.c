@@ -42,6 +42,7 @@
 #define DEBUG_DOMAIN "AccountWidgetIRC"
 
 typedef struct {
+  /* FIXME: do we really need this account ? */
   McAccount *account;
   EmpathyIrcNetwork *network;
 

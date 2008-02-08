@@ -142,6 +142,7 @@ account_widget_irc_button_network_clicked_cb (GtkWidget *button,
 
   window = empathy_get_toplevel_window (settings->vbox_settings);
   irc_network_dialog_show (settings->account, network, GTK_WIDGET (window));
+  /* TODO: update account when destroyed */
 
   g_object_unref (network);
 }
