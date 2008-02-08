@@ -202,8 +202,7 @@ account_widget_irc_button_network_clicked_cb (GtkWidget *button,
   model = gtk_combo_box_get_model (GTK_COMBO_BOX (settings->combobox_network));
   gtk_tree_model_get (model, &iter, COL_NETWORK_OBJ, &network, -1);
 
-  if (network == NULL)
-    return;
+  g_assert (network != NULL);
 
   window = empathy_get_toplevel_window (settings->vbox_settings);
   dialog = irc_network_dialog_show (network, GTK_WIDGET (window));
@@ -227,14 +226,20 @@ account_widget_irc_button_remove_clicked_cb (GtkWidget *button,
   model = gtk_combo_box_get_model (GTK_COMBO_BOX (settings->combobox_network));
   gtk_tree_model_get (model, &iter, COL_NETWORK_OBJ, &network, -1);
 
-  if (network == NULL)
-    return;
+  g_assert (network != NULL);
 
   g_object_get (network, "name", &name, NULL);
   empathy_debug (DEBUG_DOMAIN, "Remove network %s", name);
 
   gtk_list_store_remove (GTK_LIST_STORE (model), &iter);
   empathy_irc_network_manager_remove (settings->network_manager, network);
+
+  /* Select the first network */
+  if (gtk_tree_model_get_iter_first (model, &iter))
+    {
+      gtk_combo_box_set_active_iter (
+          GTK_COMBO_BOX (settings->combobox_network), &iter);
+    }
 
   g_free (name);
   g_object_unref (network);
@@ -246,59 +251,6 @@ account_widget_irc_button_add_network_clicked_cb (GtkWidget *button,
 {
   /* TODO */
   g_print ("add network\n");
-}
-
-static gboolean
-account_widget_irc_is_separator (GtkTreeModel *model,
-                                 GtkTreeIter *iter,
-                                 gpointer data)
-{
-  GtkTreePath *path;
-  gboolean result;
-
-  path = gtk_tree_model_get_path (model, iter);
-  result = gtk_tree_path_get_indices (path)[0] == 0;
-  gtk_tree_path_free (path);
-
-  /* return result; */
-  /* FIXME: "New..." disappear if we display the separator */
-  return FALSE;
-}
-
-static gint
-account_widget_irc_sort (GtkTreeModel *model,
-                         GtkTreeIter *a,
-                         GtkTreeIter *b,
-                         gpointer user_data)
-{
-  gchar *name_a, *name_b;
-  EmpathyIrcNetwork *network_a, *network_b;
-  gint result;
-
-  gtk_tree_model_get (model, a,
-      COL_NETWORK_OBJ, &network_a,
-      COL_NETWORK_NAME, &name_a,
-      -1);
-  gtk_tree_model_get (model, b,
-      COL_NETWORK_OBJ, &network_b,
-      COL_NETWORK_NAME, &name_b,
-      -1);
-
-  if (network_a == NULL)
-    result = -1;
-  else if (network_b == NULL)
-    result = 1;
-  else
-    result = strcmp (name_a, name_b);
-
-  g_free (name_a);
-  g_free (name_b);
-  if (network_a != NULL)
-    g_object_unref (network_a);
-  if (network_b != NULL)
-    g_object_unref (network_b);
-
-  return result;
 }
 
 static void
@@ -316,6 +268,7 @@ account_widget_irc_combobox_network_changed_cb (GtkWidget *combobox,
   GtkTreeIter iter;
   GtkTreeModel *model;
   EmpathyIrcNetwork *network;
+  GSList *servers;
 
   if (!gtk_combo_box_get_active_iter (GTK_COMBO_BOX (combobox), &iter))
     {
@@ -326,47 +279,40 @@ account_widget_irc_combobox_network_changed_cb (GtkWidget *combobox,
   model = gtk_combo_box_get_model (GTK_COMBO_BOX (combobox));
   gtk_tree_model_get (model, &iter, COL_NETWORK_OBJ, &network, -1);
 
-  if (network == NULL)
+  g_assert (network != NULL);
+
+  servers = empathy_irc_network_get_servers (network);
+  if (g_slist_length (servers) > 0)
     {
-      /* TODO Open new network dialog */
+      /* set the first server as CM server */
+      EmpathyIrcServer *server = servers->data;
+      gchar *address;
+      guint port;
+      gboolean ssl;
+
+      g_object_get (server,
+          "address", &address,
+          "port", &port,
+          "ssl", &ssl,
+          NULL);
+
+      empathy_debug (DEBUG_DOMAIN, "Setting server to %s", address);
+      mc_account_set_param_string (settings->account, "server", address);
+      mc_account_set_param_int (settings->account, "port", port);
+      mc_account_set_param_boolean (settings->account, "use-ssl", ssl);
+      /* TODO: charset */
+
+      g_free (address);
     }
   else
     {
-      GSList *servers;
-
-      servers = empathy_irc_network_get_servers (network);
-      if (g_slist_length (servers) > 0)
-        {
-          /* set the first server as CM server */
-          EmpathyIrcServer *server = servers->data;
-          gchar *address;
-          guint port;
-          gboolean ssl;
-
-          g_object_get (server,
-              "address", &address,
-              "port", &port,
-              "ssl", &ssl,
-              NULL);
-
-          empathy_debug (DEBUG_DOMAIN, "Setting server to %s", address);
-          mc_account_set_param_string (settings->account, "server", address);
-          mc_account_set_param_int (settings->account, "port", port);
-          mc_account_set_param_boolean (settings->account, "use-ssl", ssl);
-          /* TODO: charset */
-
-          g_free (address);
-        }
-      else
-        {
-          /* No server. Unset values */
-          unset_server_values (settings);
-        }
-
-      g_slist_foreach (servers, (GFunc) g_object_unref, NULL);
-      g_slist_free (servers);
-      g_object_unref (network);
+      /* No server. Unset values */
+      unset_server_values (settings);
     }
+
+  g_slist_foreach (servers, (GFunc) g_object_unref, NULL);
+  g_slist_free (servers);
+  g_object_unref (network);
 }
 
 static void
@@ -406,11 +352,10 @@ fill_networks_model (EmpathyAccountWidgetIrc *settings,
 
   if (network_to_select == NULL)
     {
-      /* Select the first network. So skip the "New..." */
+      /* Select the first network */
       GtkTreeIter iter;
 
-      if (gtk_tree_model_get_iter_first (model, &iter) &&
-          gtk_tree_model_iter_next (model, &iter))
+      if (gtk_tree_model_get_iter_first (model, &iter))
         {
           gtk_combo_box_set_active_iter (
               GTK_COMBO_BOX (settings->combobox_network), &iter);
@@ -528,7 +473,6 @@ empathy_account_widget_irc_new (McAccount *account)
   gchar *dir, *user_file_with_path, *global_file_with_path;
   GladeXML *glade;
   GtkListStore *store;
-  GtkTreeIter iter;
   GtkCellRenderer *renderer;
   GtkSizeGroup *size_group;
   GtkWidget *label_network, *label_nick, *label_fullname;
@@ -574,10 +518,6 @@ empathy_account_widget_irc_new (McAccount *account)
   /* Fill the networks combobox */
   store = gtk_list_store_new (2, G_TYPE_OBJECT, G_TYPE_STRING);
 
-  gtk_list_store_append (store, &iter);
-  gtk_list_store_set (store, &iter, COL_NETWORK_OBJ, NULL,
-      COL_NETWORK_NAME, _("New..."), -1);
-
   gtk_cell_layout_clear (GTK_CELL_LAYOUT (settings->combobox_network)); 
   renderer = gtk_cell_renderer_text_new ();
   gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (settings->combobox_network),
@@ -590,15 +530,6 @@ empathy_account_widget_irc_new (McAccount *account)
   gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (store),
       COL_NETWORK_NAME,
       GTK_SORT_ASCENDING);
-  gtk_tree_sortable_set_sort_func (GTK_TREE_SORTABLE (store),
-      COL_NETWORK_NAME,
-      account_widget_irc_sort,
-      NULL, NULL);
-
-  gtk_combo_box_set_row_separator_func (
-      GTK_COMBO_BOX (settings->combobox_network),
-      account_widget_irc_is_separator,
-      NULL, NULL);
 
   gtk_combo_box_set_model (GTK_COMBO_BOX (settings->combobox_network),
       GTK_TREE_MODEL (store));
