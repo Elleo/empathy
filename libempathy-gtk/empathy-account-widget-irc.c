@@ -131,6 +131,7 @@ irc_network_dialog_destroy_cb (GtkWidget *widget,
   GtkTreeModel *model;
   EmpathyIrcNetwork *network;
   gchar *name;
+  GSList *servers;
 
   /* name could be changed */
   gtk_combo_box_get_active_iter (GTK_COMBO_BOX (settings->combobox_network),
@@ -142,7 +143,45 @@ irc_network_dialog_destroy_cb (GtkWidget *widget,
   gtk_list_store_set (GTK_LIST_STORE (model), &iter,
       COL_NETWORK_NAME, name, -1);
 
-  /* TODO: update server, port, ssl etc */
+  /* TODO: update charset */
+  servers = empathy_irc_network_get_servers (network);
+  if (servers == NULL)
+    {
+      /* Unset all values */
+      empathy_debug (DEBUG_DOMAIN, "Unset server, port and ssl");
+      mc_account_unset_param (settings->account, "server");
+      mc_account_unset_param (settings->account, "port");
+      mc_account_unset_param (settings->account, "ssl");
+    }
+  else
+    {
+      EmpathyIrcServer *server;
+      gchar *address;
+      guint port;
+      gboolean ssl;
+
+      /* Take the first server on the list */
+      server = servers->data;
+
+      g_object_get (server,
+          "address", &address,
+          "port", &port,
+          "ssl", &ssl,
+          NULL);
+
+      empathy_debug (DEBUG_DOMAIN, "Setting server to %s", address);
+      mc_account_set_param_string (settings->account, "server", address);
+      empathy_debug (DEBUG_DOMAIN, "Setting port to %u", port);
+      mc_account_set_param_int (settings->account, "port", port);
+      empathy_debug (DEBUG_DOMAIN, "Setting ssl to %s", ssl ? "TRUE": "FALSE" );
+      mc_account_set_param_boolean (settings->account, "use-ssl", ssl);
+
+      g_free (address);
+    }
+
+
+  g_slist_foreach (servers, (GFunc) g_object_unref, NULL);
+  g_slist_free (servers);
   g_object_unref (network);
   g_free (name);
 }
