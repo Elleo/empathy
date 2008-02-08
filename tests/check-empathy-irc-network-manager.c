@@ -105,22 +105,22 @@ START_TEST (test_load_global_file)
 
       if (strcmp (name, "Freenode") == 0)
         {
-          check_network (l->data, "Freenode", freenode_servers, 2);
+          check_network (l->data, "Freenode", "UTF-8", freenode_servers, 2);
           network_checked[0] = TRUE;
         }
       else if (strcmp (name, "GIMPNet") == 0)
         {
-          check_network (l->data, "GIMPNet", gimpnet_servers, 2);
+          check_network (l->data, "GIMPNet", "UTF-8", gimpnet_servers, 2);
           network_checked[1] = TRUE;
         }
       else if (strcmp (name, "Test Server") == 0)
         {
-          check_network (l->data, "Test Server", test_servers, 1);
+          check_network (l->data, "Test Server", "UTF-8", test_servers, 1);
           network_checked[2] = TRUE;
         }
       else if (strcmp (name, "Undernet") == 0)
         {
-          check_network (l->data, "Undernet", undernet_servers, 1);
+          check_network (l->data, "Undernet", "UTF-8", undernet_servers, 1);
           network_checked[3] = TRUE;
         }
       else
@@ -205,17 +205,17 @@ START_TEST (test_empathy_irc_network_manager_remove)
 
       if (strcmp (name, "Freenode") == 0)
         {
-          check_network (l->data, "Freenode", freenode_servers, 2);
+          check_network (l->data, "Freenode", "UTF-8", freenode_servers, 2);
           network_checked[0] = TRUE;
         }
       else if (strcmp (name, "Test Server") == 0)
         {
-          check_network (l->data, "Test Server", test_servers, 1);
+          check_network (l->data, "Test Server", "UTF-8", test_servers, 1);
           network_checked[1] = TRUE;
         }
       else if (strcmp (name, "Undernet") == 0)
         {
-          check_network (l->data, "Undernet", undernet_servers, 1);
+          check_network (l->data, "Undernet", "UTF-8", undernet_servers, 1);
           network_checked[2] = TRUE;
         }
       else
@@ -290,17 +290,17 @@ START_TEST (test_load_user_file)
 
       if (strcmp (name, "GIMPNet") == 0)
         {
-          check_network (l->data, "GIMPNet", gimpnet_servers, 3);
+          check_network (l->data, "GIMPNet", "UTF-8", gimpnet_servers, 3);
           network_checked[0] = TRUE;
         }
       else if (strcmp (name, "My Server") == 0)
         {
-          check_network (l->data, "My Server", my_server, 1);
+          check_network (l->data, "My Server", "UTF-8", my_server, 1);
           network_checked[1] = TRUE;
         }
       else if (strcmp (name, "Another Server") == 0)
         {
-          check_network (l->data, "Another Server", another_server, 1);
+          check_network (l->data, "Another Server", "UTF-8", another_server, 1);
           network_checked[2] = TRUE;
         }
       else
@@ -364,27 +364,27 @@ START_TEST (test_load_both_files)
 
       if (strcmp (name, "Freenode") == 0)
         {
-          check_network (l->data, "Freenode", freenode_servers, 2);
+          check_network (l->data, "Freenode", "UTF-8", freenode_servers, 2);
           network_checked[0] = TRUE;
         }
       else if (strcmp (name, "GIMPNet") == 0)
         {
-          check_network (l->data, "GIMPNet", gimpnet_servers, 3);
+          check_network (l->data, "GIMPNet", "UTF-8", gimpnet_servers, 3);
           network_checked[1] = TRUE;
         }
       else if (strcmp (name, "My Server") == 0)
         {
-          check_network (l->data, "My Server", my_server, 1);
+          check_network (l->data, "My Server", "UTF-8", my_server, 1);
           network_checked[2] = TRUE;
         }
       else if (strcmp (name, "Another Server") == 0)
         {
-          check_network (l->data, "Another Server", another_server, 1);
+          check_network (l->data, "Another Server", "UTF-8", another_server, 1);
           network_checked[3] = TRUE;
         }
       else if (strcmp (name, "Undernet") == 0)
         {
-          check_network (l->data, "Undernet", undernet_servers, 1);
+          check_network (l->data, "Undernet", "UTF-8", undernet_servers, 1);
           network_checked[4] = TRUE;
         }
       else
@@ -537,17 +537,17 @@ START_TEST (test_modify_user_file)
 
       if (strcmp (name, "GIMPNet") == 0)
         {
-          check_network (l->data, "GIMPNet", gimpnet_servers, 2);
+          check_network (l->data, "GIMPNet", "UTF-8", gimpnet_servers, 2);
           network_checked[0] = TRUE;
         }
       else if (strcmp (name, "Great Server") == 0)
         {
-          check_network (l->data, "Great Server", great_server, 1);
+          check_network (l->data, "Great Server", "UTF-8", great_server, 1);
           network_checked[1] = TRUE;
         }
       else if (strcmp (name, "Another Server") == 0)
         {
-          check_network (l->data, "Another Server", another_server, 1);
+          check_network (l->data, "Another Server", "UTF-8", another_server, 1);
           network_checked[2] = TRUE;
         }
       else
@@ -723,22 +723,22 @@ START_TEST (test_modify_both_files)
 
       if (strcmp (name, "GIMPNet") == 0)
         {
-          check_network (l->data, "GIMPNet", gimpnet_servers, 2);
+          check_network (l->data, "GIMPNet", "UTF-8", gimpnet_servers, 2);
           network_checked[0] = TRUE;
         }
       else if (strcmp (name, "Great Server") == 0)
         {
-          check_network (l->data, "Great Server", great_server, 1);
+          check_network (l->data, "Great Server", "UTF-8", great_server, 1);
           network_checked[1] = TRUE;
         }
       else if (strcmp (name, "Another Server") == 0)
         {
-          check_network (l->data, "Another Server", another_server, 1);
+          check_network (l->data, "Another Server", "UTF-8", another_server, 1);
           network_checked[2] = TRUE;
         }
       else if (strcmp (name, "Undernet") == 0)
         {
-          check_network (l->data, "Undernet", undernet_servers, 2);
+          check_network (l->data, "Undernet", "UTF-8", undernet_servers, 2);
           network_checked[3] = TRUE;
         }
       else
@@ -770,12 +770,12 @@ START_TEST (test_empathy_irc_network_manager_find_network_by_address)
   network = empathy_irc_network_manager_find_network_by_address (mgr,
       "irc.freenode.net");
   fail_if (network == NULL);
-  check_network (network, "Freenode", freenode_servers, 2);
+  check_network (network, "Freenode", "UTF-8", freenode_servers, 2);
 
   network = empathy_irc_network_manager_find_network_by_address (mgr,
       "irc.eu.freenode.net");
   fail_if (network == NULL);
-  check_network (network, "Freenode", freenode_servers, 2);
+  check_network (network, "Freenode", "UTF-8", freenode_servers, 2);
 
   network = empathy_irc_network_manager_find_network_by_address (mgr,
       "unknown");

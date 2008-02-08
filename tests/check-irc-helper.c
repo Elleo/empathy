@@ -28,10 +28,11 @@ check_server (EmpathyIrcServer *server,
 void
 check_network (EmpathyIrcNetwork *network,
               const gchar *_name,
+              const gchar *_charset,
               struct server_t *_servers,
               guint nb_servers)
 {
-  gchar  *name;
+  gchar  *name, *charset;
   GSList *servers, *l;
   guint i;
 
@@ -39,9 +40,11 @@ check_network (EmpathyIrcNetwork *network,
 
   g_object_get (network,
       "name", &name,
+      "charset", &charset,
       NULL);
 
   fail_if (name == NULL || strcmp (name, _name) != 0);
+  fail_if (charset == NULL || strcmp (charset, _charset) != 0);
 
   servers = empathy_irc_network_get_servers (network);
   fail_if (g_slist_length (servers) != nb_servers);
@@ -73,4 +76,5 @@ check_network (EmpathyIrcNetwork *network,
   g_slist_foreach (servers, (GFunc) g_object_unref, NULL);
   g_slist_free (servers);
   g_free (name);
+  g_free (charset);
 }
