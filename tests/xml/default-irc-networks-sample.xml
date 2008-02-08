@@ -15,7 +15,7 @@
     </servers>
   </network>
 
-  <network id="testsrv" name="Test Server">
+  <network id="testsrv" name="Test Server" network_charset="ISO-8859-1">
     <servers>
       <server address="irc.test.org" port="6669" ssl="TRUE" />
     </servers>

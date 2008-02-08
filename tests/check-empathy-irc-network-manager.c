@@ -115,7 +115,7 @@ START_TEST (test_load_global_file)
         }
       else if (strcmp (name, "Test Server") == 0)
         {
-          check_network (l->data, "Test Server", "UTF-8", test_servers, 1);
+          check_network (l->data, "Test Server", "ISO-8859-1", test_servers, 1);
           network_checked[2] = TRUE;
         }
       else if (strcmp (name, "Undernet") == 0)
@@ -210,7 +210,7 @@ START_TEST (test_empathy_irc_network_manager_remove)
         }
       else if (strcmp (name, "Test Server") == 0)
         {
-          check_network (l->data, "Test Server", "UTF-8", test_servers, 1);
+          check_network (l->data, "Test Server", "ISO-8859-1", test_servers, 1);
           network_checked[1] = TRUE;
         }
       else if (strcmp (name, "Undernet") == 0)
@@ -450,6 +450,9 @@ START_TEST (test_modify_user_file)
         {
           GSList *servers, *ll;
 
+          /* change charset */
+          g_object_set (network, "charset", "ISO-8859-1", NULL);
+
           servers = empathy_irc_network_get_servers (network);
           for (ll = servers; ll != NULL; ll = g_slist_next (ll))
             {
@@ -537,7 +540,7 @@ START_TEST (test_modify_user_file)
 
       if (strcmp (name, "GIMPNet") == 0)
         {
-          check_network (l->data, "GIMPNet", "UTF-8", gimpnet_servers, 2);
+          check_network (l->data, "GIMPNet", "ISO-8859-1", gimpnet_servers, 2);
           network_checked[0] = TRUE;
         }
       else if (strcmp (name, "Great Server") == 0)
