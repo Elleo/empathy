@@ -124,6 +124,30 @@ account_widget_irc_destroy_cb (GtkWidget *widget,
 }
 
 static void
+irc_network_dialog_destroy_cb (GtkWidget *widget,
+                               EmpathyAccountWidgetIrc *settings)
+{
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  EmpathyIrcNetwork *network;
+  gchar *name;
+
+  /* name could be changed */
+  gtk_combo_box_get_active_iter (GTK_COMBO_BOX (settings->combobox_network),
+      &iter);
+  model = gtk_combo_box_get_model (GTK_COMBO_BOX (settings->combobox_network));
+  gtk_tree_model_get (model, &iter, COL_NETWORK_OBJ, &network, -1);
+
+  g_object_get (network, "name", &name, NULL);
+  gtk_list_store_set (GTK_LIST_STORE (model), &iter,
+      COL_NETWORK_NAME, name, -1);
+
+  /* TODO: update server, port, ssl etc */
+  g_object_unref (network);
+  g_free (name);
+}
+
+static void
 account_widget_irc_button_network_clicked_cb (GtkWidget *button,
                                               EmpathyAccountWidgetIrc *settings)
 {
@@ -131,6 +155,7 @@ account_widget_irc_button_network_clicked_cb (GtkWidget *button,
   GtkTreeModel *model;
   EmpathyIrcNetwork *network;
   GtkWindow *window;
+  GtkWidget *dialog;
 
   gtk_combo_box_get_active_iter (GTK_COMBO_BOX (settings->combobox_network),
       &iter);
@@ -141,8 +166,10 @@ account_widget_irc_button_network_clicked_cb (GtkWidget *button,
     return;
 
   window = empathy_get_toplevel_window (settings->vbox_settings);
-  irc_network_dialog_show (settings->account, network, GTK_WIDGET (window));
-  /* TODO: update account when destroyed */
+  dialog = irc_network_dialog_show (settings->account, network,
+      GTK_WIDGET (window));
+  g_signal_connect (dialog, "destroy",
+      G_CALLBACK (irc_network_dialog_destroy_cb), settings);
 
   g_object_unref (network);
 }
