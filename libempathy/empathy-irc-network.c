@@ -36,6 +36,7 @@ G_DEFINE_TYPE (EmpathyIrcNetwork, empathy_irc_network, G_TYPE_OBJECT);
 enum
 {
   PROP_NAME = 1,
+  PROP_CHARSET,
   LAST_PROPERTY
 };
 
@@ -53,6 +54,7 @@ typedef struct _EmpathyIrcNetworkPrivate EmpathyIrcNetworkPrivate;
 struct _EmpathyIrcNetworkPrivate
 {
   gchar *name;
+  gchar *charset;
   GSList *servers;
 };
 
@@ -80,6 +82,9 @@ empathy_irc_network_get_property (GObject *object,
       case PROP_NAME:
         g_value_set_string (value, priv->name);
         break;
+      case PROP_CHARSET:
+        g_value_set_string (value, priv->charset);
+        break;
       default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
         break;
@@ -102,6 +107,14 @@ empathy_irc_network_set_property (GObject *object,
           {
             g_free (priv->name);
             priv->name = g_value_dup_string (value);
+            g_signal_emit (object, signals[MODIFIED], 0);
+          }
+        break;
+      case PROP_CHARSET:
+        if (tp_strdiff (priv->charset, g_value_get_string (value)))
+          {
+            g_free (priv->charset);
+            priv->charset = g_value_dup_string (value);
             g_signal_emit (object, signals[MODIFIED], 0);
           }
         break;
@@ -179,6 +192,18 @@ empathy_irc_network_class_init (EmpathyIrcNetworkClass *klass)
       G_PARAM_STATIC_NICK |
       G_PARAM_STATIC_BLURB);
   g_object_class_install_property (object_class, PROP_NAME, param_spec);
+
+  param_spec = g_param_spec_string (
+      "charset",
+      "Charset",
+      "The charset to use on this network",
+      "UTF-8",
+      G_PARAM_CONSTRUCT |
+      G_PARAM_READWRITE |
+      G_PARAM_STATIC_NAME |
+      G_PARAM_STATIC_NICK |
+      G_PARAM_STATIC_BLURB);
+  g_object_class_install_property (object_class, PROP_CHARSET, param_spec);
 
   signals[MODIFIED] = g_signal_new (
       "modified",
