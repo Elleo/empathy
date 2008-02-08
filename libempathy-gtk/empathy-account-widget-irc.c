@@ -50,6 +50,7 @@ typedef struct {
   GtkWidget *vbox_settings;
 
   GtkWidget *combobox_network;
+  GtkWidget *button_add_network;
   GtkWidget *button_network;
   GtkWidget *button_remove;
 
@@ -237,6 +238,14 @@ account_widget_irc_button_remove_clicked_cb (GtkWidget *button,
 
   g_free (name);
   g_object_unref (network);
+}
+
+static void
+account_widget_irc_button_add_network_clicked_cb (GtkWidget *button,
+                                                  EmpathyAccountWidgetIrc *settings)
+{
+  /* TODO */
+  g_print ("add network\n");
 }
 
 static gboolean
@@ -549,6 +558,7 @@ empathy_account_widget_irc_new (McAccount *account)
       "vbox_irc_settings", &settings->vbox_settings,
       "combobox_network", &settings->combobox_network,
       "button_network", &settings->button_network,
+      "button_add_network", &settings->button_add_network,
       "button_remove", &settings->button_remove,
       "label_network", &label_network,
       "label_nick", &label_nick,
@@ -603,6 +613,7 @@ empathy_account_widget_irc_new (McAccount *account)
       "entry_password", "focus-out-event", account_widget_irc_entry_focus_cb,
       "entry_quit_message", "focus-out-event", account_widget_irc_entry_focus_cb,
       "button_network", "clicked", account_widget_irc_button_network_clicked_cb,
+      "button_add_network", "clicked", account_widget_irc_button_add_network_clicked_cb,
       "button_remove", "clicked", account_widget_irc_button_remove_clicked_cb,
       "combobox_network", "changed", account_widget_irc_combobox_network_changed_cb,
       NULL);
