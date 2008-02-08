@@ -216,14 +216,25 @@ irc_network_dialog_destroy_cb (GtkWidget *widget,
 }
 
 static void
+display_irc_network_dialog (EmpathyAccountWidgetIrc *settings,
+                            EmpathyIrcNetwork *network)
+{
+  GtkWindow *window;
+  GtkWidget *dialog;
+
+  window = empathy_get_toplevel_window (settings->vbox_settings);
+  dialog = irc_network_dialog_show (network, GTK_WIDGET (window));
+  g_signal_connect (dialog, "destroy",
+      G_CALLBACK (irc_network_dialog_destroy_cb), settings);
+}
+
+static void
 account_widget_irc_button_network_clicked_cb (GtkWidget *button,
                                               EmpathyAccountWidgetIrc *settings)
 {
   GtkTreeIter iter;
   GtkTreeModel *model;
   EmpathyIrcNetwork *network;
-  GtkWindow *window;
-  GtkWidget *dialog;
 
   gtk_combo_box_get_active_iter (GTK_COMBO_BOX (settings->combobox_network),
       &iter);
@@ -232,10 +243,7 @@ account_widget_irc_button_network_clicked_cb (GtkWidget *button,
 
   g_assert (network != NULL);
 
-  window = empathy_get_toplevel_window (settings->vbox_settings);
-  dialog = irc_network_dialog_show (network, GTK_WIDGET (window));
-  g_signal_connect (dialog, "destroy",
-      G_CALLBACK (irc_network_dialog_destroy_cb), settings);
+  display_irc_network_dialog (settings, network);
 
   g_object_unref (network);
 }
@@ -277,8 +285,29 @@ static void
 account_widget_irc_button_add_network_clicked_cb (GtkWidget *button,
                                                   EmpathyAccountWidgetIrc *settings)
 {
-  /* TODO */
-  g_print ("add network\n");
+  EmpathyIrcNetwork *network;
+  GtkTreeModel *model;
+  GtkListStore *store;
+  gchar *name;
+  GtkTreeIter iter;
+
+  network = empathy_irc_network_new (_("New Network"));
+  empathy_irc_network_manager_add (settings->network_manager, network);
+
+  model = gtk_combo_box_get_model (GTK_COMBO_BOX (settings->combobox_network));
+  store = GTK_LIST_STORE (model);
+
+  g_object_get (network, "name", &name, NULL);
+  gtk_list_store_append (store, &iter);
+  gtk_list_store_set (store, &iter, COL_NETWORK_OBJ, network,
+      COL_NETWORK_NAME, name, -1);
+   gtk_combo_box_set_active_iter (GTK_COMBO_BOX (settings->combobox_network),
+       &iter);
+  g_free (name);
+
+  display_irc_network_dialog (settings, network);
+
+  g_object_unref (network);
 }
 
 static void
