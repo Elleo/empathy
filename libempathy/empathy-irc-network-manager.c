@@ -463,6 +463,15 @@ irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
 
   name = xmlGetProp (node, "name");
   network = empathy_irc_network_new (name);
+
+  if (xmlHasProp (node, "network_charset"))
+    {
+      gchar *charset;
+      charset = xmlGetProp (node, "network_charset");
+      g_object_set (network, "charset", charset, NULL);
+      xmlFree (charset);
+    }
+
   add_network (self, network, id);
   empathy_debug (DEBUG_DOMAIN, "add network %s (id %s)", name, id);
 
@@ -553,7 +562,7 @@ write_network_to_xml (const gchar *id,
 {
   xmlNodePtr network_node, servers_node;
   GSList *servers, *l;
-  gchar *name;
+  gchar *name, *charset;
 
   if (!network->user_defined)
     /* no need to write this network to the XML */
@@ -568,9 +577,14 @@ write_network_to_xml (const gchar *id,
       return;
     }
 
-  g_object_get (network, "name", &name, NULL);
+  g_object_get (network,
+      "name", &name,
+      "charset", &charset,
+      NULL);
   xmlNewProp (network_node, "name", name);
+  xmlNewProp (network_node, "network_charset", charset);
   g_free (name);
+  g_free (charset);
 
   servers = empathy_irc_network_get_servers (network);
 
