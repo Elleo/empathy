@@ -205,8 +205,7 @@ account_widget_irc_button_network_clicked_cb (GtkWidget *button,
     return;
 
   window = empathy_get_toplevel_window (settings->vbox_settings);
-  dialog = irc_network_dialog_show (settings->account, network,
-      GTK_WIDGET (window));
+  dialog = irc_network_dialog_show (network, GTK_WIDGET (window));
   g_signal_connect (dialog, "destroy",
       G_CALLBACK (irc_network_dialog_destroy_cb), settings);
 

@@ -22,15 +22,13 @@
 #define __EMPATHY_IRC_NETWORK_DIALOG_H__
 
 #include <gtk/gtkwidget.h>
-#include <libmissioncontrol/mc-account.h>
 
 #include <libempathy/empathy-irc-network.h>
 
 G_BEGIN_DECLS
 
 GtkWidget *
-irc_network_dialog_show (McAccount *account, EmpathyIrcNetwork *network,
-    GtkWidget *parent);
+irc_network_dialog_show (EmpathyIrcNetwork *network, GtkWidget *parent);
 
 G_END_DECLS
 

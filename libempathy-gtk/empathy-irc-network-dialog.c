@@ -42,8 +42,6 @@
 #define DEBUG_DOMAIN "AccountWidgetIRC"
 
 typedef struct {
-  /* FIXME: do we really need this account ? */
-  McAccount *account;
   EmpathyIrcNetwork *network;
 
   GtkWidget *dialog;
@@ -63,7 +61,6 @@ static void
 irc_network_dialog_destroy_cb (GtkWidget *widget,
                                EmpathyIrcNetworkDialog *dialog)
 {
-  g_object_unref (dialog->account);
   g_object_unref (dialog->network);
 
   g_slice_free (EmpathyIrcNetworkDialog, dialog);
@@ -292,8 +289,7 @@ irc_network_dialog_selection_changed_cb (GtkTreeSelection  *treeselection,
 }
 
 GtkWidget *
-irc_network_dialog_show (McAccount *account,
-                         EmpathyIrcNetwork *network,
+irc_network_dialog_show (EmpathyIrcNetwork *network,
                          GtkWidget *parent)
 {
   static EmpathyIrcNetworkDialog *dialog = NULL;
@@ -314,7 +310,6 @@ irc_network_dialog_show (McAccount *account,
     }
 
   dialog = g_slice_new0 (EmpathyIrcNetworkDialog);
-  dialog->account = g_object_ref (account);
 
   dialog->network = network;
   g_object_ref (dialog->network);
