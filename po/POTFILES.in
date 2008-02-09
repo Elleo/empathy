@@ -55,6 +55,7 @@ libempathy-gtk/empathy-theme-irc.c
 libempathy-gtk/empathy-theme-manager.c
 libempathy-gtk/empathy-account-widget-irc.c
 libempathy-gtk/empathy-account-widget-irc.glade
+libempathy-gtk/empathy-irc-network-dialog.c
 
 megaphone/data/GNOME_Megaphone_Applet.schemas.in
 megaphone/data/GNOME_Megaphone_Applet.server.in.in
