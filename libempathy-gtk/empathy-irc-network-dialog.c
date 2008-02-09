@@ -397,10 +397,6 @@ static void
 irc_network_dialog_selection_changed_cb (GtkTreeSelection  *treeselection,
                                          EmpathyIrcNetworkDialog *dialog)
 {
-  /* TODO: sensitive / unsensitive buttons according current
-   * selection/configuration */
-  g_print ("selection changed\n");
-
   irc_network_dialog_network_update_buttons (dialog);
 }
 
