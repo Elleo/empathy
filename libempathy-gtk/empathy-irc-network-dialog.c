@@ -298,6 +298,7 @@ irc_network_dialog_show (EmpathyIrcNetwork *network,
   GtkCellRenderer *renderer;
   GtkAdjustment *adjustment;
   GtkTreeSelection *selection;
+  GtkTreeViewColumn *column;
 
   g_return_val_if_fail (network != NULL, NULL);
 
@@ -358,6 +359,9 @@ irc_network_dialog_show (EmpathyIrcNetwork *network,
       GTK_TREE_VIEW (dialog->treeview_servers),
       -1, _("Port"), renderer, "text", COL_PORT,
       NULL);
+  column = gtk_tree_view_get_column (GTK_TREE_VIEW (dialog->treeview_servers),
+      1);
+  gtk_tree_view_column_set_expand (column, TRUE);
 
   /* SSL */
   renderer = gtk_cell_renderer_toggle_new ();
