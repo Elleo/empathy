@@ -231,6 +231,38 @@ irc_network_dialog_network_focus_cb (GtkWidget *widget,
 }
 
 static void
+irc_network_dialog_network_update_buttons (EmpathyIrcNetworkDialog *dialog)
+{
+  GtkTreeSelection *selection;
+  GtkTreeModel *model;
+  GtkTreePath *path;
+  GtkTreeIter iter;
+  gboolean can_remove = FALSE, can_move_up = FALSE, can_move_down = FALSE;
+  int selected;
+
+  selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (
+        dialog->treeview_servers));
+
+  if (gtk_tree_selection_get_selected (selection, &model, &iter))
+  {
+    path = gtk_tree_model_get_path (model, &iter);
+
+    selected = gtk_tree_path_get_indices (path)[0];
+
+    can_remove = TRUE;
+    can_move_up = selected > 0;
+    can_move_down = 
+      selected < gtk_tree_model_iter_n_children (model, NULL) - 1;
+
+    gtk_tree_path_free (path);
+  }
+
+  gtk_widget_set_sensitive (dialog->button_remove, can_remove);
+  gtk_widget_set_sensitive (dialog->button_up, can_move_up);
+  gtk_widget_set_sensitive (dialog->button_down, can_move_down);
+}
+
+static void
 irc_network_dialog_button_add_clicked_cb (GtkWidget *widget,
                                           EmpathyIrcNetworkDialog *dialog)
 {
@@ -252,6 +284,8 @@ irc_network_dialog_button_add_clicked_cb (GtkWidget *widget,
       0);
   gtk_tree_view_set_cursor (GTK_TREE_VIEW (dialog->treeview_servers), path,
       column, TRUE);
+
+  irc_network_dialog_network_update_buttons (dialog);
 
   gtk_tree_path_free (path);
   g_object_unref (server);
@@ -276,6 +310,8 @@ irc_network_dialog_button_remove_clicked_cb (GtkWidget *widget,
 
   gtk_list_store_remove (GTK_LIST_STORE (model), &iter);
   empathy_irc_network_remove_server (dialog->network, server);
+
+  irc_network_dialog_network_update_buttons (dialog);
 
   g_object_unref (server);
 }
@@ -312,6 +348,8 @@ irc_network_dialog_button_up_clicked_cb (GtkWidget *widget,
 
   pos = gtk_tree_path_get_indices (path);
   empathy_irc_network_set_server_position (dialog->network, server, *pos);
+
+  irc_network_dialog_network_update_buttons (dialog);
 
   g_object_unref (server);
   gtk_tree_path_free (path);
@@ -350,6 +388,8 @@ irc_network_dialog_button_down_clicked_cb (GtkWidget *widget,
   pos = gtk_tree_path_get_indices (path);
   empathy_irc_network_set_server_position (dialog->network, server, *pos);
 
+  irc_network_dialog_network_update_buttons (dialog);
+
   gtk_tree_path_free (path);
 }
 
@@ -360,6 +400,8 @@ irc_network_dialog_selection_changed_cb (GtkTreeSelection  *treeselection,
   /* TODO: sensitive / unsensitive buttons according current
    * selection/configuration */
   g_print ("selection changed\n");
+
+  irc_network_dialog_network_update_buttons (dialog);
 }
 
 GtkWidget *
@@ -475,6 +517,8 @@ irc_network_dialog_show (EmpathyIrcNetwork *network,
   gtk_window_set_transient_for (GTK_WINDOW (dialog->dialog),
       GTK_WINDOW (parent));
   gtk_window_set_modal (GTK_WINDOW (dialog->dialog), TRUE);
+
+  irc_network_dialog_network_update_buttons (dialog);
 
   gtk_widget_show_all (dialog->dialog);
 
