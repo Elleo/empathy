@@ -82,9 +82,9 @@ enum {
 
 static void
 add_server_to_store (GtkListStore *store,
-                     EmpathyIrcServer *server)
+                     EmpathyIrcServer *server,
+                     GtkTreeIter *iter)
 {
-  GtkTreeIter iter;
   gchar *address;
   guint port;
   gboolean ssl;
@@ -95,8 +95,8 @@ add_server_to_store (GtkListStore *store,
       "ssl", &ssl,
       NULL);
 
-  gtk_list_store_append (store, &iter);
-  gtk_list_store_set (store, &iter, COL_SRV_OBJ, server,
+  gtk_list_store_append (store, iter);
+  gtk_list_store_set (store, iter, COL_SRV_OBJ, server,
       COL_ADR, address, COL_PORT, port, COL_SSL, ssl, -1);
 
   g_free (address);
@@ -119,8 +119,9 @@ irc_network_dialog_setup (EmpathyIrcNetworkDialog *dialog)
   for (l = servers; l != NULL; l = g_slist_next (l))
     {
       EmpathyIrcServer *server = l->data;
+      GtkTreeIter iter;
 
-      add_server_to_store (store, server);
+      add_server_to_store (store, server, &iter);
     }
 
   /* TODO charset */
@@ -235,16 +236,24 @@ irc_network_dialog_button_add_clicked_cb (GtkWidget *widget,
 {
   EmpathyIrcServer *server;
   GtkListStore *store;
+  GtkTreeIter iter;
+  GtkTreePath *path;
+  GtkTreeViewColumn *column;
 
   store = GTK_LIST_STORE (gtk_tree_view_get_model (
         GTK_TREE_VIEW (dialog->treeview_servers)));
 
   server = empathy_irc_server_new (_("new server"), 6667, FALSE);
   empathy_irc_network_add_server (dialog->network, server);
-  add_server_to_store (store, server);
+  add_server_to_store (store, server, &iter);
 
-  /* TODO: Set the focus in the address cell of this new server */
+  path = gtk_tree_model_get_path (GTK_TREE_MODEL (store), &iter);
+  column = gtk_tree_view_get_column (GTK_TREE_VIEW (dialog->treeview_servers),
+      0);
+  gtk_tree_view_set_cursor (GTK_TREE_VIEW (dialog->treeview_servers), path,
+      column, TRUE);
 
+  gtk_tree_path_free (path);
   g_object_unref (server);
 }
 
