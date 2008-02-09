@@ -281,11 +281,60 @@ irc_network_dialog_button_remove_clicked_cb (GtkWidget *widget,
 }
 
 static void
-irc_network_dialog_button_up_down_clicked_cb (GtkWidget *widget,
-                                              EmpathyIrcNetworkDialog *dialog)
+irc_network_dialog_button_up_clicked_cb (GtkWidget *widget,
+                                         EmpathyIrcNetworkDialog *dialog)
 {
-  /* TODO */
-  g_print ("up-down\n");
+  GtkTreeSelection *selection;
+  GtkTreeModel *model;
+  GtkTreeIter iter, iter_prev;
+  GtkTreePath *path;
+
+  selection = gtk_tree_view_get_selection (
+      GTK_TREE_VIEW (dialog->treeview_servers));
+
+  /* TODO: move EmpathyIrcServer */
+  if (gtk_tree_selection_get_selected (selection, &model, &iter))
+  {
+    path = gtk_tree_model_get_path (model, &iter);
+
+    if (!gtk_tree_path_prev (path))
+    {
+      gtk_tree_path_free (path);
+      return;
+    }
+
+    gtk_tree_model_get_iter (model, &iter_prev, path);
+    gtk_list_store_swap (GTK_LIST_STORE (model), &iter_prev, &iter);
+
+    gtk_tree_path_free (path);
+  }
+}
+
+static void
+irc_network_dialog_button_down_clicked_cb (GtkWidget *widget,
+                                           EmpathyIrcNetworkDialog *dialog)
+{
+  GtkTreeSelection *selection;
+  GtkTreeModel *model;
+  GtkTreeIter iter, iter_prev;
+  GtkTreePath *path;
+
+  selection = gtk_tree_view_get_selection (
+      GTK_TREE_VIEW (dialog->treeview_servers));
+
+  /* TODO: move EmpathyIrcServer */
+  if (gtk_tree_selection_get_selected (selection, &model, &iter))
+  {
+    path = gtk_tree_model_get_path (model, &iter);
+
+    gtk_tree_path_next (path);
+    if (gtk_tree_model_get_iter (model, &iter_prev, path))
+      {
+        gtk_list_store_swap (GTK_LIST_STORE (model), &iter_prev, &iter);
+      }
+
+    gtk_tree_path_free (path);
+  }
 }
 
 static void
@@ -394,8 +443,8 @@ irc_network_dialog_show (EmpathyIrcNetwork *network,
       "entry_network", "focus-out-event", irc_network_dialog_network_focus_cb,
       "button_add", "clicked", irc_network_dialog_button_add_clicked_cb,
       "button_remove", "clicked", irc_network_dialog_button_remove_clicked_cb,
-      "button_up", "clicked", irc_network_dialog_button_up_down_clicked_cb,
-      "button_down", "clicked", irc_network_dialog_button_up_down_clicked_cb,
+      "button_up", "clicked", irc_network_dialog_button_up_clicked_cb,
+      "button_down", "clicked", irc_network_dialog_button_down_clicked_cb,
       NULL);
 
   g_object_unref (glade);
