@@ -288,26 +288,33 @@ irc_network_dialog_button_up_clicked_cb (GtkWidget *widget,
   GtkTreeModel *model;
   GtkTreeIter iter, iter_prev;
   GtkTreePath *path;
+  gint *pos;
+  EmpathyIrcServer *server;
 
   selection = gtk_tree_view_get_selection (
       GTK_TREE_VIEW (dialog->treeview_servers));
 
-  /* TODO: move EmpathyIrcServer */
-  if (gtk_tree_selection_get_selected (selection, &model, &iter))
+  if (!gtk_tree_selection_get_selected (selection, &model, &iter))
+    return;
+
+  path = gtk_tree_model_get_path (model, &iter);
+
+  if (!gtk_tree_path_prev (path))
   {
-    path = gtk_tree_model_get_path (model, &iter);
-
-    if (!gtk_tree_path_prev (path))
-    {
-      gtk_tree_path_free (path);
-      return;
-    }
-
-    gtk_tree_model_get_iter (model, &iter_prev, path);
-    gtk_list_store_swap (GTK_LIST_STORE (model), &iter_prev, &iter);
-
     gtk_tree_path_free (path);
+    return;
   }
+
+  gtk_tree_model_get (model, &iter, COL_SRV_OBJ, &server, -1);
+
+  gtk_tree_model_get_iter (model, &iter_prev, path);
+  gtk_list_store_swap (GTK_LIST_STORE (model), &iter_prev, &iter);
+
+  pos = gtk_tree_path_get_indices (path);
+  empathy_irc_network_set_server_position (dialog->network, server, *pos);
+
+  g_object_unref (server);
+  gtk_tree_path_free (path);
 }
 
 static void
@@ -318,23 +325,32 @@ irc_network_dialog_button_down_clicked_cb (GtkWidget *widget,
   GtkTreeModel *model;
   GtkTreeIter iter, iter_prev;
   GtkTreePath *path;
+  EmpathyIrcServer *server;
+  gint *pos;
 
   selection = gtk_tree_view_get_selection (
       GTK_TREE_VIEW (dialog->treeview_servers));
 
-  /* TODO: move EmpathyIrcServer */
-  if (gtk_tree_selection_get_selected (selection, &model, &iter))
-  {
-    path = gtk_tree_model_get_path (model, &iter);
+  if (!gtk_tree_selection_get_selected (selection, &model, &iter))
+    return;
 
-    gtk_tree_path_next (path);
-    if (gtk_tree_model_get_iter (model, &iter_prev, path))
-      {
-        gtk_list_store_swap (GTK_LIST_STORE (model), &iter_prev, &iter);
-      }
+  path = gtk_tree_model_get_path (model, &iter);
 
-    gtk_tree_path_free (path);
-  }
+  gtk_tree_path_next (path);
+  if (!gtk_tree_model_get_iter (model, &iter_prev, path))
+    {
+      gtk_tree_path_free (path);
+      return;
+    }
+
+  gtk_tree_model_get (model, &iter, COL_SRV_OBJ, &server, -1);
+
+  gtk_list_store_swap (GTK_LIST_STORE (model), &iter_prev, &iter);
+
+  pos = gtk_tree_path_get_indices (path);
+  empathy_irc_network_set_server_position (dialog->network, server, *pos);
+
+  gtk_tree_path_free (path);
 }
 
 static void
