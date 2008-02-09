@@ -400,6 +400,31 @@ irc_network_dialog_selection_changed_cb (GtkTreeSelection  *treeselection,
   irc_network_dialog_network_update_buttons (dialog);
 }
 
+static void
+change_network (EmpathyIrcNetworkDialog *dialog,
+                EmpathyIrcNetwork *network)
+{
+  GtkListStore *store;
+
+  if (dialog->network == network)
+    /* No need to change */
+    return;
+
+  if (dialog->network != NULL)
+    {
+      g_object_unref (dialog->network);
+    }
+
+  dialog->network = network;
+  g_object_ref (network);
+
+  store = GTK_LIST_STORE (gtk_tree_view_get_model (
+        GTK_TREE_VIEW (dialog->treeview_servers)));
+  gtk_list_store_clear (store);
+
+  irc_network_dialog_setup (dialog);
+}
+
 GtkWidget *
 irc_network_dialog_show (EmpathyIrcNetwork *network,
                          GtkWidget *parent)
@@ -416,8 +441,8 @@ irc_network_dialog_show (EmpathyIrcNetwork *network,
 
   if (dialog != NULL)
     {
+      change_network (dialog, network);
       gtk_window_present (GTK_WINDOW (dialog->dialog));
-      /* TODO: set the right network */
 
       return dialog->dialog;
     }
