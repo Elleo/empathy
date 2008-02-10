@@ -36,6 +36,7 @@
 #include <libempathy/empathy-irc-network-manager.h>
 
 #include "empathy-irc-network-dialog.h"
+#include "empathy-account-widget.h"
 #include "empathy-account-widget-irc.h"
 #include "empathy-ui-utils.h"
 
@@ -53,66 +54,12 @@ typedef struct {
   GtkWidget *button_add_network;
   GtkWidget *button_network;
   GtkWidget *button_remove;
-
-  GtkWidget *entry_nick;
-  GtkWidget *entry_password;
-  GtkWidget *entry_fullname;
-  GtkWidget *entry_quit_message;
 } EmpathyAccountWidgetIrc;
 
 enum {
   COL_NETWORK_OBJ,
   COL_NETWORK_NAME,
 };
-
-static gboolean
-account_widget_irc_entry_focus_cb (GtkWidget *widget,
-                                   GdkEventFocus *event,
-                                   EmpathyAccountWidgetIrc *settings)
-{
-  const gchar *param;
-  const gchar *str;
-
-  if (widget == settings->entry_nick)
-    {
-      param = "account";
-    }
-  else if (widget == settings->entry_fullname)
-    {
-      param = "fullname";
-    }
-  else if (widget == settings->entry_password)
-    {
-      param = "password";
-    }
-  else if (widget == settings->entry_quit_message)
-    {
-      param = "quit-message";
-    }
-  else
-    {
-      return FALSE;
-    }
-
-  str = gtk_entry_get_text (GTK_ENTRY (widget));
-  if (G_STR_EMPTY (str))
-    {
-      gchar *value = NULL;
-
-      mc_account_unset_param (settings->account, param);
-      mc_account_get_param_string (settings->account, param, &value);
-      empathy_debug (DEBUG_DOMAIN, "Unset %s and restore to %s", param, value);
-      gtk_entry_set_text (GTK_ENTRY (widget), value ? value : "");
-      g_free (value);
-    }
-  else
-    {
-      empathy_debug (DEBUG_DOMAIN, "Setting %s to %s", param, str);
-      mc_account_set_param_string (settings->account, param, str);
-    }
-
-  return FALSE;
-}
 
 static void
 account_widget_irc_destroy_cb (GtkWidget *widget,
@@ -371,9 +318,7 @@ static void
 account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
 {
   gchar *nick = NULL;
-  gchar *password = NULL;
   gchar *fullname = NULL;
-  gchar *quit_message= NULL;
   gchar *server = NULL;
   gint port = 6667;
   gchar *charset;
@@ -382,9 +327,6 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
 
   mc_account_get_param_string (settings->account, "account", &nick);
   mc_account_get_param_string (settings->account, "fullname", &fullname);
-  mc_account_get_param_string (settings->account, "password", &password);
-  mc_account_get_param_string (settings->account, "quit-message",
-      &quit_message);
   mc_account_get_param_string (settings->account, "server", &server);
   mc_account_get_param_string (settings->account, "charset", &charset);
   mc_account_get_param_int (settings->account, "port", &port);
@@ -405,15 +347,6 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
         }
       mc_account_set_param_string (settings->account, "fullname", fullname);
     }
-
-  gtk_entry_set_text (GTK_ENTRY (settings->entry_nick), nick ? nick : "");
-  gtk_entry_set_text (GTK_ENTRY (settings->entry_password),
-      password ? password : "");
-  gtk_entry_set_text (GTK_ENTRY (settings->entry_fullname),
-      fullname ? fullname : "");
-  gtk_entry_set_text (GTK_ENTRY (settings->entry_quit_message),
-      quit_message ? quit_message : "");
-
 
   if (server != NULL)
     {
@@ -462,8 +395,6 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
 
   g_free (nick);
   g_free (fullname);
-  g_free (password);
-  g_free (quit_message);
   g_free (server);
   g_free (charset);
 }
@@ -511,10 +442,6 @@ empathy_account_widget_irc_new (McAccount *account)
       "label_fullname", &label_fullname,
       "label_password", &label_password,
       "label_quit_message", &label_quit_message,
-      "entry_nick", &settings->entry_nick,
-      "entry_fullname", &settings->entry_fullname,
-      "entry_password", &settings->entry_password,
-      "entry_quit_message", &settings->entry_quit_message,
       NULL);
 
   /* Fill the networks combobox */
@@ -539,12 +466,16 @@ empathy_account_widget_irc_new (McAccount *account)
 
   account_widget_irc_setup (settings);
 
+  empathy_account_widget_new_with_glade (account, glade,
+      "vbox_irc_settings",
+      "entry_nick", "account",
+      "entry_fullname", "fullname",
+      "entry_password", "password",
+      "entry_quit_message", "quit-message",
+      NULL);
+
   empathy_glade_connect (glade, settings,
       "vbox_irc_settings", "destroy", account_widget_irc_destroy_cb,
-      "entry_nick", "focus-out-event", account_widget_irc_entry_focus_cb,
-      "entry_fullname", "focus-out-event", account_widget_irc_entry_focus_cb,
-      "entry_password", "focus-out-event", account_widget_irc_entry_focus_cb,
-      "entry_quit_message", "focus-out-event", account_widget_irc_entry_focus_cb,
       "button_network", "clicked", account_widget_irc_button_network_clicked_cb,
       "button_add_network", "clicked", account_widget_irc_button_add_network_clicked_cb,
       "button_remove", "clicked", account_widget_irc_button_remove_clicked_cb,
