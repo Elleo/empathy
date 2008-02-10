@@ -442,8 +442,8 @@ change_network (EmpathyIrcNetworkDialog *dialog,
 }
 
 GtkWidget *
-irc_network_dialog_show (EmpathyIrcNetwork *network,
-                         GtkWidget *parent)
+empathy_irc_network_dialog_show (EmpathyIrcNetwork *network,
+                                 GtkWidget *parent)
 {
   static EmpathyIrcNetworkDialog *dialog = NULL;
   GladeXML *glade;
