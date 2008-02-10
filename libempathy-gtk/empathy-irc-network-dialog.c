@@ -441,6 +441,17 @@ change_network (EmpathyIrcNetworkDialog *dialog,
   irc_network_dialog_setup (dialog);
 }
 
+/**
+ * empathy_irc_network_dialog_show:
+ * @network: the #EmpathyIrcNetwork to configure
+ * @parent: the parent of this dialog
+ *
+ * Display a dialog to configure a given #EmpathyIrcNetwork.
+ * This function is a singleton so if a configuration dialog already
+ * exists we use this one to edit the network.
+ *
+ * Returns: The displayed #GtkDialog
+ */
 GtkWidget *
 empathy_irc_network_dialog_show (EmpathyIrcNetwork *network,
                                  GtkWidget *parent)
