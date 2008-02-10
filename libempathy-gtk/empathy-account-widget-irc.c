@@ -409,6 +409,14 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
   g_free (charset);
 }
 
+/**
+ * empathy_account_widget_irc_new:
+ * @account: the #McAccount to configure
+ *
+ * Creates a new IRC account widget to configure a given #McAccount
+ *
+ * Returns: The toplevel container of the configuration widget
+ */
 GtkWidget *
 empathy_account_widget_irc_new (McAccount *account)
 {
