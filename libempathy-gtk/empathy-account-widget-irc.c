@@ -466,8 +466,7 @@ empathy_account_widget_irc_new (McAccount *account)
 
   account_widget_irc_setup (settings);
 
-  empathy_account_widget_new_with_glade (account, glade,
-      "vbox_irc_settings",
+  empathy_account_widget_handle_params (account, glade,
       "entry_nick", "account",
       "entry_fullname", "fullname",
       "entry_password", "password",
