@@ -36,6 +36,7 @@
 
 #include <libempathy/empathy-irc-network-manager.h>
 #include "empathy-ui-utils.h"
+#include "totem-subtitle-encoding.h"
 
 #include "empathy-irc-network-dialog.h"
 
@@ -105,11 +106,14 @@ add_server_to_store (GtkListStore *store,
 static void
 irc_network_dialog_setup (EmpathyIrcNetworkDialog *dialog)
 {
-  gchar *name;
+  gchar *name, *charset;
   GSList *servers, *l;
   GtkListStore *store;
 
-  g_object_get (dialog->network, "name", &name, NULL);
+  g_object_get (dialog->network,
+      "name", &name,
+      "charset", &charset,
+      NULL);
   gtk_entry_set_text (GTK_ENTRY (dialog->entry_network), name);
 
   store = GTK_LIST_STORE (gtk_tree_view_get_model (
@@ -124,11 +128,13 @@ irc_network_dialog_setup (EmpathyIrcNetworkDialog *dialog)
       add_server_to_store (store, server, &iter);
     }
 
-  /* TODO charset */
+  totem_subtitle_encoding_set (GTK_COMBO_BOX (dialog->combobox_charset),
+      charset);
 
   g_slist_foreach (servers, (GFunc) g_object_unref, NULL);
   g_slist_free (servers);
   g_free (name);
+  g_free (charset);
 }
 
 static void
@@ -401,6 +407,16 @@ irc_network_dialog_selection_changed_cb (GtkTreeSelection  *treeselection,
 }
 
 static void
+irc_network_dialog_combobox_charset_changed_cb (GtkWidget *combobox,
+                                                EmpathyIrcNetworkDialog *dialog)
+{
+  const gchar *charset;
+
+  charset = totem_subtitle_encoding_get_selected (GTK_COMBO_BOX (combobox));
+  g_object_set (dialog->network, "charset", charset, NULL);
+}
+
+static void
 change_network (EmpathyIrcNetworkDialog *dialog,
                 EmpathyIrcNetwork *network)
 {
@@ -514,6 +530,9 @@ irc_network_dialog_show (EmpathyIrcNetwork *network,
       GTK_TREE_VIEW (dialog->treeview_servers));
   gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
 
+  /* charset */
+  totem_subtitle_encoding_init (GTK_COMBO_BOX (dialog->combobox_charset));
+
   irc_network_dialog_setup (dialog);
 
   empathy_glade_connect (glade, dialog,
@@ -524,6 +543,7 @@ irc_network_dialog_show (EmpathyIrcNetwork *network,
       "button_remove", "clicked", irc_network_dialog_button_remove_clicked_cb,
       "button_up", "clicked", irc_network_dialog_button_up_clicked_cb,
       "button_down", "clicked", irc_network_dialog_button_down_clicked_cb,
+      "combobox_charset", "changed", irc_network_dialog_combobox_charset_changed_cb,
       NULL);
 
   g_object_unref (glade);

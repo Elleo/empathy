@@ -140,6 +140,7 @@ update_server_params (EmpathyAccountWidgetIrc *settings)
   GtkTreeModel *model;
   EmpathyIrcNetwork *network;
   GSList *servers;
+  gchar *charset;
 
   if (!gtk_combo_box_get_active_iter (
         GTK_COMBO_BOX (settings->combobox_network), &iter))
@@ -152,6 +153,11 @@ update_server_params (EmpathyAccountWidgetIrc *settings)
   gtk_tree_model_get (model, &iter, COL_NETWORK_OBJ, &network, -1);
 
   g_assert (network != NULL);
+
+  g_object_get (network, "charset", &charset, NULL);
+  empathy_debug (DEBUG_DOMAIN, "Setting charset to %s", charset);
+  mc_account_set_param_string (settings->account, "charset", charset);
+  g_free (charset);
 
   servers = empathy_irc_network_get_servers (network);
   if (g_slist_length (servers) > 0)
@@ -175,7 +181,6 @@ update_server_params (EmpathyAccountWidgetIrc *settings)
       empathy_debug (DEBUG_DOMAIN, "Setting use-ssl to %s",
           ssl ? "TRUE": "FALSE" );
       mc_account_set_param_boolean (settings->account, "use-ssl", ssl);
-      /* TODO: charset */
 
       g_free (address);
     }
@@ -361,6 +366,8 @@ fill_networks_model (EmpathyAccountWidgetIrc *settings,
         {
           gtk_combo_box_set_active_iter (
               GTK_COMBO_BOX (settings->combobox_network), &iter);
+
+          update_server_params (settings);
         }
     }
 
@@ -422,6 +429,8 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
       network = empathy_irc_network_manager_find_network_by_address (
           settings->network_manager, server);
 
+      g_object_set (network, "charset", charset, NULL);
+
       store = GTK_LIST_STORE (gtk_combo_box_get_model (
             GTK_COMBO_BOX (settings->combobox_network)));
 
@@ -457,6 +466,7 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
           g_object_unref (network);
         }
     }
+
 
   fill_networks_model (settings, network);
 
