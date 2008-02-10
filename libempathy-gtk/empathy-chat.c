@@ -40,7 +40,6 @@
 #include <libempathy/empathy-log-manager.h>
 #include <libempathy/empathy-debug.h>
 #include <libempathy/empathy-utils.h>
-#include <libempathy/empathy-marshal.h>
 
 #include "empathy-chat.h"
 #include "empathy-chat-window.h"
@@ -50,6 +49,7 @@
 #include "empathy-spell.h"
 #include "empathy-spell-dialog.h"
 #include "empathy-ui-utils.h"
+#include "empathy-gtk-marshal.h"
 
 #define GET_PRIV(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), EMPATHY_TYPE_CHAT, EmpathyChatPriv))
 
@@ -112,10 +112,10 @@ static void             chat_send_error_cb                (EmpathyTpChat        
 							   EmpathyMessage         *message,
 							   TpChannelTextSendError  error_code,
 							   EmpathyChat            *chat);
-void                    chat_sent_message_add             (EmpathyChat            *chat,
+static void             chat_sent_message_add             (EmpathyChat            *chat,
 							   const gchar            *str);
-const gchar *           chat_sent_message_get_next        (EmpathyChat            *chat);
-const gchar *           chat_sent_message_get_last        (EmpathyChat            *chat);
+static const gchar *    chat_sent_message_get_next        (EmpathyChat            *chat);
+static const gchar *    chat_sent_message_get_last        (EmpathyChat            *chat);
 static gboolean         chat_input_key_press_event_cb     (GtkWidget              *widget,
 							   GdkEventKey            *event,
 							   EmpathyChat            *chat);
@@ -279,7 +279,7 @@ empathy_chat_class_init (EmpathyChatClass *klass)
 			      G_SIGNAL_RUN_LAST,
 			      0,
 			      NULL, NULL,
-			      empathy_marshal_VOID__OBJECT_BOOLEAN,
+			      _empathy_gtk_marshal_VOID__OBJECT_BOOLEAN,
 			      G_TYPE_NONE,
 			      2, EMPATHY_TYPE_MESSAGE, G_TYPE_BOOLEAN);
 
@@ -579,7 +579,7 @@ chat_send_error_cb (EmpathyTpChat          *tp_chat,
 	g_free (str);
 }
 
-void 
+static void 
 chat_sent_message_add (EmpathyChat  *chat,
 		       const gchar *str)
 {
@@ -617,7 +617,7 @@ chat_sent_message_add (EmpathyChat  *chat,
 	priv->sent_messages_index = -1;
 }
 
-const gchar *
+static const gchar *
 chat_sent_message_get_next (EmpathyChat *chat)
 {
 	EmpathyChatPriv *priv;
@@ -644,7 +644,7 @@ chat_sent_message_get_next (EmpathyChat *chat)
 	return g_slist_nth_data (priv->sent_messages, priv->sent_messages_index);
 }
 
-const gchar *
+static const gchar *
 chat_sent_message_get_last (EmpathyChat *chat)
 {
 	EmpathyChatPriv *priv;
