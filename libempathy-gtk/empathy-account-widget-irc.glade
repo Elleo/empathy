@@ -276,7 +276,6 @@
                     <child>
                       <widget class="GtkComboBox" id="combobox_charset">
                         <property name="visible">True</property>
-                        <property name="items" translatable="yes">UTF-8</property>
                       </widget>
                       <packing>
                         <property name="left_attach">1</property>
