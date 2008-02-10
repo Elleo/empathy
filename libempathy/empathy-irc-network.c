@@ -212,7 +212,7 @@ empathy_irc_network_class_init (EmpathyIrcNetworkClass *klass)
       G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED,
       0,
       NULL, NULL,
-      empathy_marshal_VOID__VOID,
+      g_cclosure_marshal_VOID__VOID,
       G_TYPE_NONE, 0);
 }
 
