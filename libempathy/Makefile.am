@@ -8,10 +8,12 @@ AM_CPPFLAGS =                                           \
 BUILT_SOURCES = 					\
 	empathy-marshal.h				\
 	empathy-marshal.c				\
+	empathy-marshal.list				\
 	empathy-enum-types.h				\
 	empathy-enum-types.c				\
 	empathy-filter-glue.h				\
-	empathy-chandler-glue.h
+	empathy-chandler-glue.h				\
+	tp-stream-engine-gen.h
 
 lib_LTLIBRARIES = libempathy.la
 
@@ -52,7 +54,8 @@ libempathy_la_LIBADD =		\
 	$(LIBEMPATHY_LIBS)
 
 libempathy_la_LDFLAGS =		\
-	-version-info ${LIBEMPATHY_CURRENT}:${LIBEMPATHY_REVISION}:${LIBEMPATHY_AGE}
+       -version-info ${LIBEMPATHY_CURRENT}:${LIBEMPATHY_REVISION}:${LIBEMPATHY_AGE} \
+       -export-symbols-regex ^empathy_
 
 libempathy_headers =				\
 	empathy-avatar.h			\
@@ -81,20 +84,30 @@ libempathy_headers =				\
 	empathy-log-manager.h			\
 	empathy-irc-network-manager.h		\
 	empathy-irc-network.h			\
-	empathy-irc-server.h			\
-	tp-stream-engine-gen.h
+	empathy-irc-server.h
 
 libempathy_includedir = $(includedir)/libempathy/
 libempathy_include_HEADERS =			\
 	$(libempathy_headers)			\
 	empathy-enum-types.h
 
+empathy-marshal.list: $(libempathy_la_SOURCES) Makefile.am
+	( cd $(srcdir) && \
+	sed -n -e 's/.*empathy_marshal_\([[:upper:]]*__[[:upper:]_]*\).*/\1/p' \
+	$(libempathy_la_SOURCES) ) \
+	| sed -e 's/__/:/' -e 'y/_/,/' | sort -u > $@.tmp
+	if cmp -s $@.tmp $@; then \
+		rm $@.tmp; \
+	else \
+		mv $@.tmp $@; \
+	fi
+
 %-marshal.h: %-marshal.list Makefile
-	$(GLIB_GENMARSHAL) --header --prefix=$(subst -,_,$*)_marshal $< > $*-marshal.h
+	$(GLIB_GENMARSHAL) --header --prefix=_$(subst -,_,$*)_marshal $< > $*-marshal.h
 
 %-marshal.c: %-marshal.list Makefile
 	echo "#include \"empathy-marshal.h\"" > $@ && \
-	$(GLIB_GENMARSHAL) --body --prefix=$(subst -,_,$*)_marshal $< >> $*-marshal.c
+	$(GLIB_GENMARSHAL) --body --prefix=_$(subst -,_,$*)_marshal $< >> $*-marshal.c
 
 empathy-chandler-glue.h: empathy-chandler.xml Makefile
 	$(LIBTOOL) --mode=execute $(DBUS_BINDING_TOOL) --prefix=empathy_chandler --mode=glib-server --output=$@ $<

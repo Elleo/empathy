@@ -6,6 +6,9 @@ AM_CPPFLAGS =                                           \
 	$(WARN_CFLAGS)
 
 BUILT_SOURCES = 					\
+	empathy-gtk-marshal.h				\
+	empathy-gtk-marshal.c				\
+	empathy-gtk-marshal.list			\
 	empathy-gtk-enum-types.h			\
 	empathy-gtk-enum-types.c
 
@@ -19,10 +22,7 @@ libempathy_gtk_la_SOURCES =             	\
 	empathy-contact-widget.c		\
 	empathy-contact-dialogs.c		\
 	empathy-accounts-dialog.c		\
-	empathy-account-widget-generic.c	\
-	empathy-account-widget-jabber.c		\
-	empathy-account-widget-msn.c		\
-	empathy-account-widget-salut.c		\
+	empathy-account-widget.c		\
 	empathy-account-widget-irc.c		\
 	empathy-profile-chooser.c		\
 	empathy-cell-renderer-expander.c	\
@@ -67,7 +67,8 @@ libempathy_gtk_la_LIBADD =			\
 	$(top_builddir)/libempathy/libempathy.la
 
 libempathy_gtk_la_LDFLAGS =                \
-       -version-info ${LIBEMPATHY_GTK_CURRENT}:${LIBEMPATHY_GTK_REVISION}:${LIBEMPATHY_GTK_AGE}
+       -version-info ${LIBEMPATHY_GTK_CURRENT}:${LIBEMPATHY_GTK_REVISION}:${LIBEMPATHY_GTK_AGE} \
+       -export-symbols-regex ^empathy_
 
 libempathy_gtk_headers =			\
 	empathy-images.h			\
@@ -77,10 +78,7 @@ libempathy_gtk_headers =			\
 	empathy-contact-widget.h		\
 	empathy-contact-dialogs.h		\
 	empathy-accounts-dialog.h		\
-	empathy-account-widget-generic.h	\
-	empathy-account-widget-jabber.h		\
-	empathy-account-widget-msn.h		\
-	empathy-account-widget-salut.h		\
+	empathy-account-widget.h		\
 	empathy-account-widget-irc.h		\
 	empathy-profile-chooser.h		\
 	empathy-cell-renderer-expander.h	\
@@ -142,6 +140,24 @@ glade_DATA = 					\
 	empathy-call-window.glade		\
 	empathy-chat.glade			\
 	empathy-new-message-dialog.glade
+
+empathy-gtk-marshal.list: $(libempathy_gtk_la_SOURCES) Makefile.am
+	( cd $(srcdir) && \
+	sed -n -e 's/.*empathy_gtk_marshal_\([[:upper:]]*__[[:upper:]_]*\).*/\1/p' \
+	$(libempathy_gtk_la_SOURCES) ) \
+	| sed -e 's/__/:/' -e 'y/_/,/' | sort -u > $@.tmp
+	if cmp -s $@.tmp $@; then \
+		rm $@.tmp; \
+	else \
+		mv $@.tmp $@; \
+	fi
+
+%-marshal.h: %-marshal.list Makefile
+	$(GLIB_GENMARSHAL) --header --prefix=_$(subst -,_,$*)_marshal $< > $*-marshal.h
+
+%-marshal.c: %-marshal.list Makefile
+	echo "#include \"empathy-gtk-marshal.h\"" > $@ && \
+	$(GLIB_GENMARSHAL) --body --prefix=_$(subst -,_,$*)_marshal $< >> $*-marshal.c
 
 empathy-gtk-enum-types.h: stamp-empathy-gtk-enum-types.h
 	@true
