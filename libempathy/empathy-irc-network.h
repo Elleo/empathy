@@ -63,11 +63,9 @@ GType empathy_irc_network_get_type (void);
   (G_TYPE_INSTANCE_GET_CLASS ((o), EMPATHY_TYPE_IRC_NETWORK, \
                               EmpathyIrcNetworkClass))
 
-EmpathyIrcNetwork *
-empathy_irc_network_new (const gchar *name);
+EmpathyIrcNetwork * empathy_irc_network_new (const gchar *name);
 
-GSList *
-empathy_irc_network_get_servers (EmpathyIrcNetwork *network);
+GSList * empathy_irc_network_get_servers (EmpathyIrcNetwork *network);
 
 void empathy_irc_network_add_server (EmpathyIrcNetwork *network,
     EmpathyIrcServer *server);
