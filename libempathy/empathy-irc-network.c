@@ -252,6 +252,8 @@ empathy_irc_network_add_server (EmpathyIrcNetwork *self,
 
   priv = EMPATHY_IRC_NETWORK_GET_PRIVATE (self);
 
+  g_return_if_fail (g_slist_find (priv->servers, server) == NULL);
+
   priv->servers = g_slist_append (priv->servers, g_object_ref (server));
 
   g_signal_connect (server, "modified", G_CALLBACK (server_modified_cb), self);
