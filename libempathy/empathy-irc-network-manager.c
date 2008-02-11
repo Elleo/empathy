@@ -525,14 +525,15 @@ irc_network_manager_file_parse (EmpathyIrcNetworkManager *self,
       return FALSE;
     }
 
-  /*
+#if 0
+   */ FIXME: validate using DTD */
   if (!empathy_xml_validate (doc, IRC_NETWORKS_DTD_FILENAME)) {
     g_warning ("Failed to validate file:'%s'", filename);
     xmlFreeDoc (doc);
     xmlFreeParserCtxt (ctxt);
     return FALSE;
   }
-  */
+#endif
 
   /* The root node, networks. */
   networks = xmlDocGetRootElement (doc);
@@ -541,13 +542,6 @@ irc_network_manager_file_parse (EmpathyIrcNetworkManager *self,
     {
       irc_network_manager_parse_irc_network (self, node, user_defined);
     }
-
-  /*
-  empathy_debug (DEBUG_DOMAIN,
-          "Parsed %d irc_networks",
-          g_list_length (priv->irc_networks));
-
-  */
 
   xmlFreeDoc(doc);
   xmlFreeParserCtxt (ctxt);
