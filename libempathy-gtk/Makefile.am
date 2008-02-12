@@ -136,7 +136,7 @@ glade_DATA = 					\
 
 empathy-gtk-marshal.list: $(libempathy_gtk_la_SOURCES) Makefile.am
 	( cd $(srcdir) && \
-	sed -n -e 's/.*empathy_gtk_marshal_\([A-Z0-9]*__[A-Z0-9_]*\).*/\1/p' \
+	sed -n -e 's/.*empathy_gtk_marshal_\([[:upper:][:digit:]]*__[[:upper:][:digit:]_]*\).*/\1/p' \
 	$(libempathy_gtk_la_SOURCES) ) \
 	| sed -e 's/__/:/' -e 'y/_/,/' | sort -u > $@.tmp
 	if cmp -s $@.tmp $@; then \
