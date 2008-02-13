@@ -60,8 +60,8 @@ get_glade_file (const gchar *filename,
 		const gchar *first_required_widget,
 		va_list      args)
 {
-	gchar      *path;
 	GladeXML   *gui;
+	gchar      *path;
 	const char *name;
 	GtkWidget **widget_ptr;
 
@@ -77,7 +77,6 @@ get_glade_file (const gchar *filename,
 
 	if (!gui) {
 		g_warning ("Couldn't find necessary glade file '%s'", filename);
-		return NULL;
 	}
 
 	for (name = first_required_widget; name; name = va_arg (args, char *)) {
@@ -114,11 +113,9 @@ empathy_glade_get_file_simple (const gchar *filename,
 
 	va_end (args);
 
-	if (!gui) {
-		return;
+	if (gui) {
+		g_object_unref (gui);
 	}
-
-	g_object_unref (gui);
 }
 
 GladeXML *
