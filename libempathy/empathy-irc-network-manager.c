@@ -444,9 +444,6 @@ irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
   gchar *str;
   gchar *id, *name;
 
-  if (!xmlHasProp (node, "id"))
-    return;
-
   id = xmlGetProp (node, "id");
   if (xmlHasProp (node, "dropped"))
     {
