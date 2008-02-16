@@ -53,6 +53,7 @@ struct _EmpathyIrcNetworkManagerPrivate {
   gchar *global_file;
   gchar *user_file;
   gboolean modified;
+  guint last_id;
 };
 
 #define EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE(obj)\
@@ -159,6 +160,8 @@ empathy_irc_network_manager_init (EmpathyIrcNetworkManager *self)
 
   priv->networks = g_hash_table_new_full (g_str_hash, g_str_equal,
       (GDestroyNotify) g_free, (GDestroyNotify) g_object_unref);
+
+  priv->last_id = 0;
 }
 
 static void
@@ -242,8 +245,7 @@ empathy_irc_network_manager_add (EmpathyIrcNetworkManager *self,
                                  EmpathyIrcNetwork *network)
 {
   EmpathyIrcNetworkManagerPrivate *priv;
-  gchar *id, *bare_id, *tmp;
-  guint no = 0;
+  gchar *id = NULL;
 
   g_return_if_fail (EMPATHY_IS_IRC_NETWORK_MANAGER (self));
   g_return_if_fail (EMPATHY_IS_IRC_NETWORK (network));
@@ -251,17 +253,14 @@ empathy_irc_network_manager_add (EmpathyIrcNetworkManager *self,
   priv = EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
 
   /* generate an id for this network */
-  g_object_get (network, "name", &tmp, NULL);
-  bare_id = g_ascii_strdown (tmp, strlen (tmp));
-  id = g_strdup (bare_id);
-  g_free (tmp);
-  while (g_hash_table_lookup (priv->networks, id) != NULL && no < G_MAXUINT)
+  do
     {
       g_free (id);
-      id = g_strdup_printf ("%s%u", bare_id, no++);
-    }
+      id = g_strdup_printf ("id%u", ++priv->last_id);
+    } while (g_hash_table_lookup (priv->networks, id) != NULL &&
+        priv->last_id < G_MAXUINT);
 
-  if (no == G_MAXUINT)
+  if (priv->last_id == G_MAXUINT)
     {
       empathy_debug (DEBUG_DOMAIN,
           "Can't add network: too many networks using a similiar ID");
@@ -273,7 +272,6 @@ empathy_irc_network_manager_add (EmpathyIrcNetworkManager *self,
   network->user_defined = TRUE;
   add_network (self, network, id);
 
-  g_free (bare_id);
   g_free (id);
 }
 
