@@ -197,7 +197,7 @@ empathy_irc_server_class_init (EmpathyIrcServerClass *klass)
    * EmpathyIrcServer::modified:
    * @server: the object that received the signal
    *
-   * Emitted when a property of the server is modified
+   * Emitted when a property of the server is modified.
    *
    */
   signals[MODIFIED] = g_signal_new (

@@ -206,6 +206,13 @@ empathy_irc_network_class_init (EmpathyIrcNetworkClass *klass)
       G_PARAM_STATIC_BLURB);
   g_object_class_install_property (object_class, PROP_CHARSET, param_spec);
 
+  /**
+   * EmpathyIrcNetwork::modified:
+   * @network: the object that received the signal
+   *
+   * Emitted when either a property or a server of the network is modified.
+   *
+   */
   signals[MODIFIED] = g_signal_new (
       "modified",
       G_OBJECT_CLASS_TYPE (object_class),
@@ -220,7 +227,7 @@ empathy_irc_network_class_init (EmpathyIrcNetworkClass *klass)
  * empathy_irc_network_new:
  * @name: the name of the network
  *
- * Creates a new #EmpathyIrcNetwork
+ * Creates a new #EmpathyIrcNetwork.
  *
  * Returns: a new #EmpathyIrcNetwork
  */
@@ -232,6 +239,17 @@ empathy_irc_network_new (const gchar *name)
       NULL);
 }
 
+/**
+ * empathy_irc_network_get_servers:
+ * @network: a #EmpathyIrcNetwork
+ *
+ * Get the list of #EmpathyIrcServer that belongs to this network.
+ * These servers are sorted according their priority.
+ * So the first one will be the first used when trying to connect to
+ * the network.
+ *
+ * Returns: a new #GSList of refed #EmpathyIrcServer.
+ */
 GSList *
 empathy_irc_network_get_servers (EmpathyIrcNetwork *self)
 {
@@ -249,6 +267,15 @@ empathy_irc_network_get_servers (EmpathyIrcNetwork *self)
   return g_slist_reverse (servers);
 }
 
+/**
+ * empathy_irc_network_add_server:
+ * @network: a #EmpathyIrcNetwork
+ * @server: the #EmpathyIrcServer to add
+ *
+ * Add an #EmpathyIrcServer to the given #EmpathyIrcNetwork. The server
+ * is added at the last position in network's servers list.
+ *
+ */
 void
 empathy_irc_network_add_server (EmpathyIrcNetwork *self,
                                 EmpathyIrcServer *server)
@@ -269,6 +296,15 @@ empathy_irc_network_add_server (EmpathyIrcNetwork *self,
   g_signal_emit (self, signals[MODIFIED], 0);
 }
 
+/**
+ * empathy_irc_network_remove_server:
+ * @network: a #EmpathyIrcNetwork
+ * @server: the #EmpathyIrcServer to remove
+ *
+ * Remove an #EmpathyIrcServer from the servers list of the
+ * given #EmpathyIrcNetwork.
+ *
+ */
 void
 empathy_irc_network_remove_server (EmpathyIrcNetwork *self,
                                    EmpathyIrcServer *server)
@@ -293,6 +329,18 @@ empathy_irc_network_remove_server (EmpathyIrcNetwork *self,
   g_signal_emit (self, signals[MODIFIED], 0);
 }
 
+/**
+ * empathy_irc_network_set_server_position:
+ * @network: a #EmpathyIrcNetwork
+ * @server: the #EmpathyIrcServer to move
+ * @pos: the position to move the server. If this is negative, or is larger than
+ * the number of servers in the list, the server is moved to the end of the
+ * list.
+ *
+ * Move an #EmpathyIrcServer in the servers list of the given
+ * #EmpathyIrcNetwork.
+ *
+ */
 void
 empathy_irc_network_set_server_position (EmpathyIrcNetwork *self,
                                          EmpathyIrcServer *server,
