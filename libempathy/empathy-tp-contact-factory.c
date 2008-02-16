@@ -535,6 +535,8 @@ tp_contact_factory_get_capabilities_cb (DBusGProxy *proxy,
 	if (error) {
 		empathy_debug (DEBUG_DOMAIN, "Error getting capabilities: %s",
 			       error->message);
+		/* FIXME Should set the capabilities of the contacts for which this request
+		 * originated to NONE */
 		goto OUT;
 	}
 

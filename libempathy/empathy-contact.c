@@ -76,8 +76,6 @@ enum {
 	PROP_ACCOUNT,
 	PROP_PRESENCE,
 	PROP_PRESENCE_MESSAGE,
-	PROP_GROUPS,
-	PROP_SUBSCRIPTION,
 	PROP_HANDLE,
 	PROP_CAPABILITIES,
 	PROP_IS_USER
@@ -159,7 +157,7 @@ empathy_contact_class_init (EmpathyContactClass *class)
 							     "Contact Capabilities",
 							     "Capabilities of the contact",
 							     EMPATHY_TYPE_CAPABILITIES,
-							     0,
+							     EMPATHY_CAPABILITIES_UNKNOWN,
 							     G_PARAM_READWRITE));
 
 	g_object_class_install_property (object_class,

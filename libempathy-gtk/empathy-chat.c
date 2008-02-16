@@ -80,6 +80,8 @@ struct _EmpathyChatPriv {
 	gboolean               first_tp_chat;
 	time_t                 last_log_timestamp;
 	gboolean               is_first_char;
+	guint                  block_events_timeout_id;
+	GList                 *pending_messages;
 	/* Used to automatically shrink a window that has temporarily
 	 * grown due to long input. 
 	 */
@@ -396,6 +398,9 @@ chat_finalize (GObject *object)
 	chat_composing_remove_timeout (chat);
 	g_object_unref (priv->log_manager);
 
+	g_list_foreach (priv->pending_messages, (GFunc) g_object_unref, NULL);
+	g_list_free (priv->pending_messages);
+
 	dbus_g_proxy_disconnect_signal (DBUS_G_PROXY (priv->mc), "AccountStatusChanged",
 					G_CALLBACK (chat_status_changed_cb),
 					chat);
@@ -412,6 +417,10 @@ chat_finalize (GObject *object)
 
 	if (priv->scroll_idle_id) {
 		g_source_remove (priv->scroll_idle_id);
+	}
+
+	if (priv->block_events_timeout_id) {
+		g_source_remove (priv->block_events_timeout_id);
 	}
 
 	g_free (priv->id);
@@ -435,6 +444,13 @@ chat_destroy_cb (EmpathyTpChat *tp_chat,
 
 	empathy_chat_view_append_event (chat->view, _("Disconnected"));
 	gtk_widget_set_sensitive (chat->input_text_view, FALSE);
+
+	if (priv->block_events_timeout_id != 0) {
+		g_source_remove (priv->block_events_timeout_id);
+	}
+
+	g_list_foreach (priv->pending_messages, (GFunc) g_object_unref, NULL);
+	g_list_free (priv->pending_messages);
 
 	if (EMPATHY_CHAT_GET_CLASS (chat)->set_tp_chat) {
 		EMPATHY_CHAT_GET_CLASS (chat)->set_tp_chat (chat, NULL);
@@ -516,6 +532,14 @@ chat_message_received_cb (EmpathyTpChat  *tp_chat,
 		 * last time we joined that room. */
 		empathy_debug (DEBUG_DOMAIN, "Skipping message because it is "
 			       "anterior of last logged message.");
+		return;
+	}
+
+	if (chat->block_events) {
+		/* Wait until block_events cb before displaying
+		 * them to have to chance to get alias/avatar of sender. */
+		priv->pending_messages = g_list_append (priv->pending_messages,
+							g_object_ref (message));
 		return;
 	}
 
@@ -1439,12 +1463,32 @@ empathy_chat_load_geometry (EmpathyChat *chat,
 	empathy_geometry_load (empathy_chat_get_id (chat), x, y, w, h);
 }
 
+static gboolean
+chat_block_events_timeout_cb (gpointer data)
+{
+	EmpathyChat     *chat = EMPATHY_CHAT (data);
+	EmpathyChatPriv *priv = GET_PRIV (chat);
+	GList           *l;
+
+	chat->block_events = FALSE;
+	priv->block_events_timeout_id = 0;
+
+	for (l = priv->pending_messages; l; l = l->next) {
+		chat_message_received_cb (priv->tp_chat, l->data, chat);
+		g_object_unref (l->data);
+	}
+	g_list_free (priv->pending_messages);
+	priv->pending_messages = NULL;
+
+	return FALSE;
+}
+
 void
 empathy_chat_set_tp_chat (EmpathyChat   *chat,
 			  EmpathyTpChat *tp_chat)
 {
 	EmpathyChatPriv *priv;
-	GList           *messages, *l;
+	GList           *messages;
 
 	g_return_if_fail (EMPATHY_IS_CHAT (chat));
 	g_return_if_fail (EMPATHY_IS_TP_CHAT (tp_chat));
@@ -1454,6 +1498,15 @@ empathy_chat_set_tp_chat (EmpathyChat   *chat,
 	if (tp_chat == priv->tp_chat) {
 		return;
 	}
+
+	/* Block events for some time to avoid having "has come online" or
+	 * "joined" messages. */
+	chat->block_events = TRUE;
+	if (priv->block_events_timeout_id != 0) {
+		g_source_remove (priv->block_events_timeout_id);
+	}
+	priv->block_events_timeout_id =
+		g_timeout_add_seconds (1, chat_block_events_timeout_cb, chat);
 
 	if (priv->tp_chat) {
 		g_signal_handlers_disconnect_by_func (priv->tp_chat,
@@ -1494,14 +1547,11 @@ empathy_chat_set_tp_chat (EmpathyChat   *chat,
 			  G_CALLBACK (chat_destroy_cb),
 			  chat);
 
-	/* Get pending messages */
+	/* Get pending messages, wait until block_events cb before displaying
+	 * them to have to chance to get alias/avatar of sender. */
 	empathy_tp_chat_set_acknowledge (tp_chat, TRUE);
 	messages = empathy_tp_chat_get_pendings (tp_chat);
-	for (l = messages; l; l = l->next) {
-		chat_message_received_cb (tp_chat, l->data, chat);
-		g_object_unref (l->data);
-	}
-	g_list_free (messages);
+	priv->pending_messages = g_list_concat (priv->pending_messages, messages);
 
 	if (!priv->sensitive) {
 		gtk_widget_set_sensitive (chat->input_text_view, TRUE);
