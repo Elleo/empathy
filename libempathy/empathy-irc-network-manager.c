@@ -32,6 +32,7 @@
 
 #define DEBUG_DOMAIN "IrcNetworkManager"
 #define IRC_NETWORKS_DTD_FILENAME "empathy-irc-networks.dtd"
+#define SAVE_TIMER 4000
 
 G_DEFINE_TYPE (EmpathyIrcNetworkManager, empathy_irc_network_manager,
     G_TYPE_OBJECT);
@@ -52,8 +53,14 @@ struct _EmpathyIrcNetworkManagerPrivate {
 
   gchar *global_file;
   gchar *user_file;
-  gboolean modified;
   guint last_id;
+
+  /* Do we have to save modifications to the user file ? */
+  gboolean have_to_save;
+  /* Are we loading networks from XML files ? */
+  gboolean loading;
+  /* source id of the autosave timer */
+  gint save_timer_id;
 };
 
 #define EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE(obj)\
@@ -144,6 +151,16 @@ empathy_irc_network_manager_finalize (GObject *object)
   EmpathyIrcNetworkManagerPrivate *priv = 
     EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
 
+  if (priv->save_timer_id > 0)
+    {
+      g_source_remove (priv->save_timer_id);
+    }
+
+  if (priv->have_to_save)
+    {
+      irc_network_manager_file_save (self);
+    }
+
   g_free (priv->global_file);
   g_free (priv->user_file);
 
@@ -164,6 +181,10 @@ empathy_irc_network_manager_init (EmpathyIrcNetworkManager *self)
       (GDestroyNotify) g_free, (GDestroyNotify) g_object_unref);
 
   priv->last_id = 0;
+
+  priv->have_to_save = FALSE;
+  priv->loading = FALSE;
+  priv->save_timer_id = 0;
 }
 
 static void
@@ -222,11 +243,47 @@ empathy_irc_network_manager_new (const gchar *global_file,
   return manager;
 }
 
+static gboolean
+save_timeout (EmpathyIrcNetworkManager *self)
+{
+  EmpathyIrcNetworkManagerPrivate *priv =
+    EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
+
+  priv->save_timer_id = 0;
+  irc_network_manager_file_save (self);
+
+  return FALSE;
+}
+
+static void
+reset_save_timeout (EmpathyIrcNetworkManager *self)
+{
+  EmpathyIrcNetworkManagerPrivate *priv =
+    EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
+
+  if (priv->save_timer_id > 0)
+    {
+      g_source_remove (priv->save_timer_id);
+    }
+
+  priv->save_timer_id = g_timeout_add (SAVE_TIMER, (GSourceFunc) save_timeout,
+      self);
+}
+
 static void
 network_modified (EmpathyIrcNetwork *network,
                   EmpathyIrcNetworkManager *self)
 {
+  EmpathyIrcNetworkManagerPrivate *priv =
+    EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
+
   network->user_defined = TRUE;
+
+  if (!priv->loading)
+    {
+      priv->have_to_save = TRUE;
+      reset_save_timeout (self);
+    }
 }
 
 static void
@@ -324,8 +381,6 @@ empathy_irc_network_manager_store (EmpathyIrcNetworkManager *self)
 {
   g_return_val_if_fail (EMPATHY_IS_IRC_NETWORK_MANAGER (self), FALSE);
 
-  empathy_debug (DEBUG_DOMAIN, "Saving IRC networks");
-
   return irc_network_manager_file_save (self);
 }
 
@@ -377,10 +432,13 @@ irc_network_manager_load_servers (EmpathyIrcNetworkManager *self)
   EmpathyIrcNetworkManagerPrivate *priv =
     EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
 
+  priv->loading = TRUE;
+
   load_global_file (self);
   load_user_file (self);
 
-  priv->modified = FALSE;
+  priv->loading = FALSE;
+  priv->have_to_save = FALSE;
 }
 
 static void
@@ -633,6 +691,8 @@ irc_network_manager_file_save (EmpathyIrcNetworkManager *self)
       return FALSE;
     }
 
+  empathy_debug (DEBUG_DOMAIN, "Saving IRC networks");
+
   doc = xmlNewDoc ("1.0");
   root = xmlNewNode (NULL, "networks");
   xmlDocSetRootElement (doc, root);
@@ -647,6 +707,8 @@ irc_network_manager_file_save (EmpathyIrcNetworkManager *self)
 
   xmlCleanupParser ();
   xmlMemoryDump ();
+
+  priv->have_to_save = FALSE;
 
   return TRUE;
 }
