@@ -88,11 +88,9 @@ empathy_irc_network_manager_get_property (GObject *object,
     {
       case PROP_GLOBAL_FILE:
         g_value_set_string (value, priv->global_file);
-        g_object_notify (object, "global-file");
         break;
       case PROP_USER_FILE:
         g_value_set_string (value, priv->user_file);
-        g_object_notify (object, "user-file");
         break;
       default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
