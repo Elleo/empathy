@@ -216,6 +216,14 @@ empathy_irc_network_class_init (EmpathyIrcNetworkClass *klass)
       G_TYPE_NONE, 0);
 }
 
+/**
+ * empathy_irc_network_new:
+ * @name: the name of the network
+ *
+ * Creates a new #EmpathyIrcNetwork
+ *
+ * Returns: a new #EmpathyIrcNetwork
+ */
 EmpathyIrcNetwork *
 empathy_irc_network_new (const gchar *name)
 {
