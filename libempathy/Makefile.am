@@ -160,7 +160,8 @@ dtddir = $(datadir)/empathy
 dtd_DATA = 					\
 	empathy-status-presets.dtd		\
 	empathy-contact-groups.dtd		\
-	empathy-chatroom-manager.dtd
+	empathy-chatroom-manager.dtd		\
+	empathy-irc-networks.dtd
 
 stylesheetdir = $(datadir)/empathy
 stylesheet_DATA =		\
