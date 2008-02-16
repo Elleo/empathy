@@ -27,9 +27,11 @@
 
 #include <libempathy/empathy-debug.h>
 
+#include "empathy-utils.h"
 #include "empathy-irc-network-manager.h"
 
 #define DEBUG_DOMAIN "IrcNetworkManager"
+#define IRC_NETWORKS_DTD_FILENAME "empathy-irc-networks.dtd"
 
 G_DEFINE_TYPE (EmpathyIrcNetworkManager, empathy_irc_network_manager,
     G_TYPE_OBJECT);
@@ -525,15 +527,12 @@ irc_network_manager_file_parse (EmpathyIrcNetworkManager *self,
       return FALSE;
     }
 
-#if 0
-   */ FIXME: validate using DTD */
   if (!empathy_xml_validate (doc, IRC_NETWORKS_DTD_FILENAME)) {
     g_warning ("Failed to validate file:'%s'", filename);
     xmlFreeDoc (doc);
     xmlFreeParserCtxt (ctxt);
     return FALSE;
   }
-#endif
 
   /* The root node, networks. */
   networks = xmlDocGetRootElement (doc);
