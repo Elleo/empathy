@@ -438,6 +438,12 @@ empathy_account_widget_irc_new (McAccount *account)
 
   global_file_with_path = g_build_filename (UNINSTALLED_IRC_DIR,
       IRC_NETWORKS_FILENAME, NULL);
+  if (!g_file_test (global_file_with_path, G_FILE_TEST_EXISTS))
+    {
+      g_free (global_file_with_path);
+      global_file_with_path = g_build_filename (DATADIR, "empathy",
+          IRC_NETWORKS_FILENAME, NULL);
+    }
 
   settings->network_manager = empathy_irc_network_manager_new (
       global_file_with_path,
