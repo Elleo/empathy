@@ -204,7 +204,7 @@ empathy_irc_network_manager_class_init (EmpathyIrcNetworkManagerClass *klass)
       "global-file",
       "path of the global networks file",
       "The path of the system-wide filename from which we have to load"
-      "the networks list",
+      " the networks list",
       NULL,
       G_PARAM_CONSTRUCT_ONLY |
       G_PARAM_READWRITE |
@@ -217,7 +217,7 @@ empathy_irc_network_manager_class_init (EmpathyIrcNetworkManagerClass *klass)
       "user-file",
       "path of the user networks file",
       "The path of user's  filename from which we have to load"
-      "the networks list and to which we'll save his modifications",
+      " the networks list and to which we'll save his modifications",
       NULL,
       G_PARAM_CONSTRUCT_ONLY |
       G_PARAM_READWRITE |
@@ -227,6 +227,15 @@ empathy_irc_network_manager_class_init (EmpathyIrcNetworkManagerClass *klass)
   g_object_class_install_property (object_class, PROP_USER_FILE, param_spec);
 }
 
+/**
+ * empathy_irc_network_manager_new:
+ * @global_file: the path of the global networks file, or %NULL
+ * @user_file: the path of the user networks file, or %NULL
+ *
+ * Creates a new #EmpathyIrcNetworkManager
+ *
+ * Returns: a new #EmpathyIrcNetworkManager
+ */
 EmpathyIrcNetworkManager *
 empathy_irc_network_manager_new (const gchar *global_file,
                                  const gchar *user_file)
@@ -297,6 +306,14 @@ add_network (EmpathyIrcNetworkManager *self,
   g_signal_connect (network, "modified", G_CALLBACK (network_modified), self);
 }
 
+/**
+ * empathy_irc_network_manager_add:
+ * @manager: an #EmpathyIrcNetworkManager
+ * @network: the #EmpathyIrcNetwork to add
+ *
+ * Add an #EmpathyIrcNetwork to the given #EmpathyIrcNetworkManager.
+ *
+ */
 void
 empathy_irc_network_manager_add (EmpathyIrcNetworkManager *self,
                                  EmpathyIrcNetwork *network)
@@ -332,6 +349,14 @@ empathy_irc_network_manager_add (EmpathyIrcNetworkManager *self,
   g_free (id);
 }
 
+/**
+ * empathy_irc_network_manager_remove:
+ * @manager: an #EmpathyIrcNetworkManager
+ * @network: the #EmpathyIrcNetwork to remove
+ *
+ * Remove an #EmpathyIrcNetwork from the given #EmpathyIrcNetworkManager.
+ *
+ */
 void
 empathy_irc_network_manager_remove (EmpathyIrcNetworkManager *self,
                                     EmpathyIrcNetwork *network)
@@ -358,6 +383,15 @@ append_network_to_list (const gchar *id,
   *list = g_slist_prepend (*list, g_object_ref (network));
 }
 
+/**
+ * empathy_irc_network_manager_get_networks:
+ * @manager: an #EmpathyIrcNetworkManager
+ *
+ * Get the list of #EmpathyIrcNetwork associated with the given
+ * manager.
+ *
+ * Returns: a new #GSList of refed #EmpathyIrcNetwork
+ */
 GSList *
 empathy_irc_network_manager_get_networks (EmpathyIrcNetworkManager *self)
 {
@@ -733,9 +767,20 @@ find_network_by_address (const gchar *id,
   return found;
 }
 
+/**
+ * empathy_irc_network_manager_find_network_by_address:
+ * @manager: an #EmpathyIrcNetworkManager
+ * @address: the server address to look for
+ *
+ * Find the #EmpathyIrcNetwork which owns an #EmpathyIrcServer
+ * that has the given address.
+ *
+ * Returns: the found #EmpathyIrcNetwork, or %NULL if not found.
+ */
 EmpathyIrcNetwork *
-empathy_irc_network_manager_find_network_by_address (EmpathyIrcNetworkManager *self,
-                                                     const gchar *address)
+empathy_irc_network_manager_find_network_by_address (
+    EmpathyIrcNetworkManager *self,
+    const gchar *address)
 {
   EmpathyIrcNetworkManagerPrivate *priv =
     EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE (self);
@@ -743,8 +788,8 @@ empathy_irc_network_manager_find_network_by_address (EmpathyIrcNetworkManager *s
 
   g_return_val_if_fail (address != NULL, NULL);
 
-  network = g_hash_table_find (priv->networks, (GHRFunc) find_network_by_address,
-      (gchar *) address);
+  network = g_hash_table_find (priv->networks,
+      (GHRFunc) find_network_by_address, (gchar *) address);
 
   return network;
 }

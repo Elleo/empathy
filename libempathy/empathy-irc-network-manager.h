@@ -66,7 +66,7 @@ EmpathyIrcNetworkManager * empathy_irc_network_manager_new (
     const gchar *global_file, const gchar *user_file);
 
 void empathy_irc_network_manager_add (EmpathyIrcNetworkManager *manager,
-    EmpathyIrcNetwork *irc_network);
+    EmpathyIrcNetwork *network);
 
 void empathy_irc_network_manager_remove (EmpathyIrcNetworkManager *manager,
     EmpathyIrcNetwork *network);
