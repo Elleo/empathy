@@ -180,8 +180,9 @@ display_irc_network_dialog (EmpathyAccountWidgetIrc *settings,
 }
 
 static void
-account_widget_irc_button_network_clicked_cb (GtkWidget *button,
-                                              EmpathyAccountWidgetIrc *settings)
+account_widget_irc_button_edit_network_clicked_cb (
+    GtkWidget *button,
+    EmpathyAccountWidgetIrc *settings)
 {
   GtkTreeIter iter;
   GtkTreeModel *model;
@@ -492,7 +493,7 @@ empathy_account_widget_irc_new (McAccount *account)
 
   empathy_glade_connect (glade, settings,
       "vbox_irc_settings", "destroy", account_widget_irc_destroy_cb,
-      "button_network", "clicked", account_widget_irc_button_network_clicked_cb,
+      "button_network", "clicked", account_widget_irc_button_edit_network_clicked_cb,
       "button_add_network", "clicked", account_widget_irc_button_add_network_clicked_cb,
       "button_remove", "clicked", account_widget_irc_button_remove_clicked_cb,
       "combobox_network", "changed", account_widget_irc_combobox_network_changed_cb,
