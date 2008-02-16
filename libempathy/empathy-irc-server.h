@@ -57,8 +57,8 @@ GType empathy_irc_server_get_type (void);
   (G_TYPE_INSTANCE_GET_CLASS ((o), EMPATHY_TYPE_IRC_SERVER,\
                               EmpathyIrcServerClass))
 
-EmpathyIrcServer *
-empathy_irc_server_new (const gchar *address, guint port, gboolean ssl);
+EmpathyIrcServer * empathy_irc_server_new (const gchar *address, guint port,
+    gboolean ssl);
 
 G_END_DECLS
 

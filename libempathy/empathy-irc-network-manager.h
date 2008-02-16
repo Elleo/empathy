@@ -62,20 +62,17 @@ empathy_irc_network_manager_get_type (void);
   (G_TYPE_INSTANCE_GET_CLASS ((o), EMPATHY_TYPE_IRC_NETWORK_MANAGER, \
                               EmpathyIrcNetworkManagerClass))
 
-EmpathyIrcNetworkManager *
-empathy_irc_network_manager_new (const gchar *global_file,
-    const gchar *user_file);
+EmpathyIrcNetworkManager * empathy_irc_network_manager_new (
+    const gchar *global_file, const gchar *user_file);
 
-void
-empathy_irc_network_manager_add (EmpathyIrcNetworkManager *manager,
+void empathy_irc_network_manager_add (EmpathyIrcNetworkManager *manager,
     EmpathyIrcNetwork *irc_network);
 
-void
-empathy_irc_network_manager_remove (EmpathyIrcNetworkManager *manager,
+void empathy_irc_network_manager_remove (EmpathyIrcNetworkManager *manager,
     EmpathyIrcNetwork *network);
 
-GSList *
-empathy_irc_network_manager_get_networks (EmpathyIrcNetworkManager *manager);
+GSList * empathy_irc_network_manager_get_networks (
+    EmpathyIrcNetworkManager *manager);
 
 EmpathyIrcNetwork * empathy_irc_network_manager_find_network_by_address (
     EmpathyIrcNetworkManager *manager, const gchar *address);

@@ -66,13 +66,13 @@ struct _EmpathyIrcNetworkManagerPrivate {
 #define EMPATHY_IRC_NETWORK_MANAGER_GET_PRIVATE(obj)\
     ((EmpathyIrcNetworkManagerPrivate *) obj->priv)
 
-static void
-irc_network_manager_load_servers (EmpathyIrcNetworkManager *manager);
-static gboolean
-irc_network_manager_file_parse (EmpathyIrcNetworkManager *manager,
-    const gchar *filename, gboolean user_defined);
-static gboolean
-irc_network_manager_file_save (EmpathyIrcNetworkManager *manager);
+static void irc_network_manager_load_servers (
+    EmpathyIrcNetworkManager *manager);
+static gboolean irc_network_manager_file_parse (
+    EmpathyIrcNetworkManager *manager, const gchar *filename,
+    gboolean user_defined);
+static gboolean irc_network_manager_file_save (
+    EmpathyIrcNetworkManager *manager);
 
 static void
 empathy_irc_network_manager_get_property (GObject *object,

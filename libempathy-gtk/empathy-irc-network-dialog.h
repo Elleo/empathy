@@ -27,8 +27,8 @@
 
 G_BEGIN_DECLS
 
-GtkWidget *
-empathy_irc_network_dialog_show (EmpathyIrcNetwork *network, GtkWidget *parent);
+GtkWidget * empathy_irc_network_dialog_show (EmpathyIrcNetwork *network,
+    GtkWidget *parent);
 
 G_END_DECLS
 

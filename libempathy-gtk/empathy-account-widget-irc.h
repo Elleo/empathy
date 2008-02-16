@@ -26,8 +26,7 @@
 
 G_BEGIN_DECLS
 
-GtkWidget *
-empathy_account_widget_irc_new (McAccount *account);
+GtkWidget * empathy_account_widget_irc_new (McAccount *account);
 
 G_END_DECLS
 
