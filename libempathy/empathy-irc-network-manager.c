@@ -447,6 +447,12 @@ irc_network_manager_parse_irc_network (EmpathyIrcNetworkManager *self,
   id = xmlGetProp (node, "id");
   if (xmlHasProp (node, "dropped"))
     {
+      if (!user_defined)
+        {
+          empathy_debug (DEBUG_DOMAIN, "the \"dropped\" attribute shouldn't be"
+             " used in the global file");
+        }
+
       network = g_hash_table_lookup (priv->networks, id);
       if (network != NULL)
         {
