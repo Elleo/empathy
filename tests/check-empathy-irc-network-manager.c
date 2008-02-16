@@ -516,8 +516,6 @@ START_TEST (test_modify_user_file)
   g_object_unref (server);
   g_object_unref (network);
 
-  empathy_irc_network_manager_store (mgr);
-
   g_slist_foreach (networks, (GFunc) g_object_unref, NULL);
   g_slist_free (networks);
   g_object_unref (mgr);
@@ -701,8 +699,6 @@ START_TEST (test_modify_both_files)
   g_object_unref (server);
   g_object_unref (network);
 
-  empathy_irc_network_manager_store (mgr);
-
   g_slist_foreach (networks, (GFunc) g_object_unref, NULL);
   g_slist_free (networks);
   g_object_unref (mgr);
@@ -797,7 +793,6 @@ START_TEST (test_no_modify_with_empty_user_file)
   g_unlink (USER_FILE);
 
   mgr = empathy_irc_network_manager_new (GLOBAL_SAMPLE, USER_FILE);
-  empathy_irc_network_manager_store (mgr);
   g_object_unref (mgr);
 
   /* We didn't modify anything so USER_FILE should be empty */

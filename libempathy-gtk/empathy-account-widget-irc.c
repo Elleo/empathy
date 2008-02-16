@@ -65,7 +65,6 @@ static void
 account_widget_irc_destroy_cb (GtkWidget *widget,
                                EmpathyAccountWidgetIrc *settings)
 {
-  empathy_irc_network_manager_store (settings->network_manager);
   g_object_unref (settings->network_manager);
   g_object_unref (settings->account);
   g_slice_free (EmpathyAccountWidgetIrc, settings);

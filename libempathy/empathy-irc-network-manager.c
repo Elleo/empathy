@@ -376,14 +376,6 @@ empathy_irc_network_manager_get_networks (EmpathyIrcNetworkManager *self)
   return irc_networks;
 }
 
-gboolean
-empathy_irc_network_manager_store (EmpathyIrcNetworkManager *self)
-{
-  g_return_val_if_fail (EMPATHY_IS_IRC_NETWORK_MANAGER (self), FALSE);
-
-  return irc_network_manager_file_save (self);
-}
-
 /*
  * API to save/load and parse the irc_networks file.
  */
