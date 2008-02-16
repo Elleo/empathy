@@ -193,6 +193,13 @@ empathy_irc_server_class_init (EmpathyIrcServerClass *klass)
       G_PARAM_STATIC_BLURB);
   g_object_class_install_property (object_class, PROP_SSL, param_spec);
 
+  /**
+   * EmpathyIrcServer::modified:
+   * @server: the object that received the signal
+   *
+   * Emitted when a property of the server is modified
+   *
+   */ 
   signals[MODIFIED] = g_signal_new (
       "modified",
       G_OBJECT_CLASS_TYPE (object_class),
@@ -203,6 +210,16 @@ empathy_irc_server_class_init (EmpathyIrcServerClass *klass)
       G_TYPE_NONE, 0);
 }
 
+/**
+ * empathy_irc_server_new:
+ * @address: the address
+ * @port: the port
+ * @ssl: TRUE if the server needs a SSL connection
+ *
+ * Creates a new #EmpathyIrcServer
+ *
+ * Returns: a new #EmpathyIrcServer
+ */
 EmpathyIrcServer *
 empathy_irc_server_new (const gchar *address,
                         guint port,
