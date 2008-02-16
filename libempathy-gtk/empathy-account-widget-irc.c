@@ -425,7 +425,6 @@ empathy_account_widget_irc_new (McAccount *account)
   GladeXML *glade;
   GtkListStore *store;
   GtkCellRenderer *renderer;
-  GtkSizeGroup *size_group;
   GtkWidget *label_network, *label_nick, *label_fullname;
   GtkWidget *label_password, *label_quit_message;
 
@@ -500,16 +499,6 @@ empathy_account_widget_irc_new (McAccount *account)
       NULL);
 
   g_object_unref (glade);
-
-  /* Set up remaining widgets */
-  size_group = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
-
-  gtk_size_group_add_widget (size_group, label_nick);
-  gtk_size_group_add_widget (size_group, label_fullname);
-  gtk_size_group_add_widget (size_group, label_password);
-  gtk_size_group_add_widget (size_group, label_quit_message);
-
-  g_object_unref (size_group);
 
   return settings->vbox_settings;
 }
