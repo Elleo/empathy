@@ -241,7 +241,7 @@ empathy_irc_network_new (const gchar *name)
 
 /**
  * empathy_irc_network_get_servers:
- * @network: a #EmpathyIrcNetwork
+ * @network: an #EmpathyIrcNetwork
  *
  * Get the list of #EmpathyIrcServer that belongs to this network.
  * These servers are sorted according their priority.
@@ -269,7 +269,7 @@ empathy_irc_network_get_servers (EmpathyIrcNetwork *self)
 
 /**
  * empathy_irc_network_add_server:
- * @network: a #EmpathyIrcNetwork
+ * @network: an #EmpathyIrcNetwork
  * @server: the #EmpathyIrcServer to add
  *
  * Add an #EmpathyIrcServer to the given #EmpathyIrcNetwork. The server
@@ -298,7 +298,7 @@ empathy_irc_network_add_server (EmpathyIrcNetwork *self,
 
 /**
  * empathy_irc_network_remove_server:
- * @network: a #EmpathyIrcNetwork
+ * @network: an #EmpathyIrcNetwork
  * @server: the #EmpathyIrcServer to remove
  *
  * Remove an #EmpathyIrcServer from the servers list of the
@@ -331,7 +331,7 @@ empathy_irc_network_remove_server (EmpathyIrcNetwork *self,
 
 /**
  * empathy_irc_network_set_server_position:
- * @network: a #EmpathyIrcNetwork
+ * @network: an #EmpathyIrcNetwork
  * @server: the #EmpathyIrcServer to move
  * @pos: the position to move the server. If this is negative, or is larger than
  * the number of servers in the list, the server is moved to the end of the
