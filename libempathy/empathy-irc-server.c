@@ -199,7 +199,7 @@ empathy_irc_server_class_init (EmpathyIrcServerClass *klass)
    *
    * Emitted when a property of the server is modified
    *
-   */ 
+   */
   signals[MODIFIED] = g_signal_new (
       "modified",
       G_OBJECT_CLASS_TYPE (object_class),
@@ -214,7 +214,7 @@ empathy_irc_server_class_init (EmpathyIrcServerClass *klass)
  * empathy_irc_server_new:
  * @address: the address
  * @port: the port
- * @ssl: TRUE if the server needs a SSL connection
+ * @ssl: %TRUE if the server needs a SSL connection
  *
  * Creates a new #EmpathyIrcServer
  *
