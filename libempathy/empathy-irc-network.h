@@ -67,7 +67,7 @@ EmpathyIrcNetwork * empathy_irc_network_new (const gchar *name);
 
 GSList * empathy_irc_network_get_servers (EmpathyIrcNetwork *network);
 
-void empathy_irc_network_add_server (EmpathyIrcNetwork *network,
+void empathy_irc_network_append_server (EmpathyIrcNetwork *network,
     EmpathyIrcServer *server);
 
 void empathy_irc_network_remove_server (EmpathyIrcNetwork *network,

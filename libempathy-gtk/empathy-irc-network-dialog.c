@@ -285,7 +285,7 @@ irc_network_dialog_button_add_clicked_cb (GtkWidget *widget,
         GTK_TREE_VIEW (dialog->treeview_servers)));
 
   server = empathy_irc_server_new (_("new server"), 6667, FALSE);
-  empathy_irc_network_add_server (dialog->network, server);
+  empathy_irc_network_append_server (dialog->network, server);
   add_server_to_store (store, server, &iter);
 
   path = gtk_tree_model_get_path (GTK_TREE_MODEL (store), &iter);

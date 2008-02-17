@@ -82,7 +82,7 @@ add_servers (EmpathyIrcNetwork *network,
       server = empathy_irc_server_new (servers[i].address,
           servers[i].port, servers[i].ssl);
       modified = FALSE;
-      empathy_irc_network_add_server (network, server);
+      empathy_irc_network_append_server (network, server);
       fail_if (!modified);
       g_object_unref (server);
     }
@@ -147,7 +147,7 @@ START_TEST (test_modified_signal_because_of_server)
   g_signal_connect (network, "modified", G_CALLBACK (modified_cb), NULL);
 
   server = empathy_irc_server_new ("server1", 6667, FALSE);
-  empathy_irc_network_add_server (network, server);
+  empathy_irc_network_append_server (network, server);
 
   /* Change server properties */
   modified = FALSE;

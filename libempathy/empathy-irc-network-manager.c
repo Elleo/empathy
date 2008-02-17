@@ -508,7 +508,7 @@ irc_network_manager_parse_irc_server (EmpathyIrcNetwork *network,
               address, port_nb, have_ssl);
 
           server = empathy_irc_server_new (address, port_nb, have_ssl);
-          empathy_irc_network_add_server (network, server);
+          empathy_irc_network_append_server (network, server);
         }
 
       if (address)

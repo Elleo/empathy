@@ -511,7 +511,7 @@ START_TEST (test_modify_user_file)
   /* Add a new network */
   network = empathy_irc_network_new ("Great Server");
   server = empathy_irc_server_new ("irc.greatserver.com", 7873, TRUE);
-  empathy_irc_network_add_server (network, server);
+  empathy_irc_network_append_server (network, server);
   empathy_irc_network_manager_add (mgr, network);
   g_object_unref (server);
   g_object_unref (network);
@@ -672,7 +672,7 @@ START_TEST (test_modify_both_files)
           EmpathyIrcServer *server;
 
           server = empathy_irc_server_new ("us.undernet.org", 6667, FALSE);
-          empathy_irc_network_add_server (network, server);
+          empathy_irc_network_append_server (network, server);
           g_object_unref (server);
 
           network_modified[3] = TRUE;
@@ -694,7 +694,7 @@ START_TEST (test_modify_both_files)
   /* Add a new network */
   network = empathy_irc_network_new ("Great Server");
   server = empathy_irc_server_new ("irc.greatserver.com", 7873, TRUE);
-  empathy_irc_network_add_server (network, server);
+  empathy_irc_network_append_server (network, server);
   empathy_irc_network_manager_add (mgr, network);
   g_object_unref (server);
   g_object_unref (network);

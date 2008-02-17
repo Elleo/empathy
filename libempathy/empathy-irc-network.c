@@ -268,7 +268,7 @@ empathy_irc_network_get_servers (EmpathyIrcNetwork *self)
 }
 
 /**
- * empathy_irc_network_add_server:
+ * empathy_irc_network_append_server:
  * @network: an #EmpathyIrcNetwork
  * @server: the #EmpathyIrcServer to add
  *
@@ -277,8 +277,8 @@ empathy_irc_network_get_servers (EmpathyIrcNetwork *self)
  *
  */
 void
-empathy_irc_network_add_server (EmpathyIrcNetwork *self,
-                                EmpathyIrcServer *server)
+empathy_irc_network_append_server (EmpathyIrcNetwork *self,
+                                   EmpathyIrcServer *server)
 {
   EmpathyIrcNetworkPrivate *priv;
 
