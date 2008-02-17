@@ -367,7 +367,6 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
       network = empathy_irc_network_manager_find_network_by_address (
           settings->network_manager, server);
 
-      g_object_set (network, "charset", charset, NULL);
 
       store = GTK_LIST_STORE (gtk_combo_box_get_model (
             GTK_COMBO_BOX (settings->combobox_network)));
@@ -375,6 +374,8 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
       if (network != NULL)
         {
           gchar *name;
+
+          g_object_set (network, "charset", charset, NULL);
 
           g_object_get (network, "name", &name, NULL);
           empathy_debug (DEBUG_DOMAIN, "Account use network %s", name);
