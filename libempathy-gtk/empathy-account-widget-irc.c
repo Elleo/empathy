@@ -433,8 +433,6 @@ empathy_account_widget_irc_new (McAccount *account)
   GladeXML *glade;
   GtkListStore *store;
   GtkCellRenderer *renderer;
-  GtkWidget *label_network, *label_nick, *label_fullname;
-  GtkWidget *label_password, *label_quit_message;
 
   settings = g_slice_new0 (EmpathyAccountWidgetIrc);
   settings->account = g_object_ref (account);
@@ -468,11 +466,6 @@ empathy_account_widget_irc_new (McAccount *account)
       "button_network", &settings->button_network,
       "button_add_network", &settings->button_add_network,
       "button_remove", &settings->button_remove,
-      "label_network", &label_network,
-      "label_nick", &label_nick,
-      "label_fullname", &label_fullname,
-      "label_password", &label_password,
-      "label_quit_message", &label_quit_message,
       NULL);
 
   /* Fill the networks combobox */
