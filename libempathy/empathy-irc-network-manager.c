@@ -32,7 +32,7 @@
 
 #define DEBUG_DOMAIN "IrcNetworkManager"
 #define IRC_NETWORKS_DTD_FILENAME "empathy-irc-networks.dtd"
-#define SAVE_TIMER 4000
+#define SAVE_TIMER 4
 
 G_DEFINE_TYPE (EmpathyIrcNetworkManager, empathy_irc_network_manager,
     G_TYPE_OBJECT);
@@ -273,8 +273,8 @@ reset_save_timeout (EmpathyIrcNetworkManager *self)
       g_source_remove (priv->save_timer_id);
     }
 
-  priv->save_timer_id = g_timeout_add (SAVE_TIMER, (GSourceFunc) save_timeout,
-      self);
+  priv->save_timer_id = g_timeout_add_seconds (SAVE_TIMER,
+      (GSourceFunc) save_timeout, self);
 }
 
 static void
