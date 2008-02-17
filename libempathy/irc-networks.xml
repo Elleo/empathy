@@ -214,7 +214,7 @@
   </network>
   <network name="FreeNode" id="freenode">
     <servers>
-      <server ssl="FALSE" port="8001" address="irc.freenode.net"/>
+      <server ssl="FALSE" port="6667" address="irc.freenode.net"/>
     </servers>
   </network>
   <network name="GalaxyNet" id="galaxynet">
