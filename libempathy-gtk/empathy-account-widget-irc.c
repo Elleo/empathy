@@ -250,15 +250,18 @@ account_widget_irc_button_add_network_clicked_cb (GtkWidget *button,
   store = GTK_LIST_STORE (model);
 
   g_object_get (network, "name", &name, NULL);
-  gtk_list_store_append (store, &iter);
-  gtk_list_store_set (store, &iter, COL_NETWORK_OBJ, network,
-      COL_NETWORK_NAME, name, -1);
-   gtk_combo_box_set_active_iter (GTK_COMBO_BOX (settings->combobox_network),
-       &iter);
-  g_free (name);
+
+  gtk_list_store_insert_with_values (store, &iter, -1,
+      COL_NETWORK_OBJ, network,
+      COL_NETWORK_NAME, name,
+      -1);
+
+  gtk_combo_box_set_active_iter (GTK_COMBO_BOX (settings->combobox_network),
+      &iter);
 
   display_irc_network_dialog (settings, network);
 
+  g_free (name);
   g_object_unref (network);
 }
 
@@ -290,9 +293,11 @@ fill_networks_model (EmpathyAccountWidgetIrc *settings,
       GtkTreeIter iter;
 
       g_object_get (network, "name", &name, NULL);
-      gtk_list_store_append (store, &iter);
-      gtk_list_store_set (store, &iter, COL_NETWORK_OBJ, network,
-          COL_NETWORK_NAME, name, -1);
+
+      gtk_list_store_insert_with_values (store, &iter, -1,
+          COL_NETWORK_OBJ, network,
+          COL_NETWORK_NAME, name,
+          -1);
 
        if (network == network_to_select)
          {
@@ -389,9 +394,11 @@ account_widget_irc_setup (EmpathyAccountWidgetIrc *settings)
           empathy_irc_network_add_server (network, srv);
           empathy_irc_network_manager_add (settings->network_manager, network);
 
-          gtk_list_store_append (store, &iter);
-          gtk_list_store_set (store, &iter, COL_NETWORK_OBJ, network,
-              COL_NETWORK_NAME, server, -1);
+          gtk_list_store_insert_with_values (store, &iter, -1,
+              COL_NETWORK_OBJ, network,
+              COL_NETWORK_NAME, server,
+              -1);
+
           gtk_combo_box_set_active_iter (
               GTK_COMBO_BOX (settings->combobox_network), &iter);
 

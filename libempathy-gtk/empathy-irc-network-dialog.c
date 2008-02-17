@@ -96,9 +96,12 @@ add_server_to_store (GtkListStore *store,
       "ssl", &ssl,
       NULL);
 
-  gtk_list_store_append (store, iter);
-  gtk_list_store_set (store, iter, COL_SRV_OBJ, server,
-      COL_ADR, address, COL_PORT, port, COL_SSL, ssl, -1);
+  gtk_list_store_insert_with_values (store, iter, -1,
+      COL_SRV_OBJ, server,
+      COL_ADR, address,
+      COL_PORT, port,
+      COL_SSL, ssl,
+      -1);
 
   g_free (address);
 }
