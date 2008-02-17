@@ -346,6 +346,9 @@ empathy_irc_network_manager_add (EmpathyIrcNetworkManager *self,
   network->user_defined = TRUE;
   add_network (self, network, id);
 
+  priv->have_to_save = TRUE;
+  reset_save_timeout (self);
+
   g_free (id);
 }
 
@@ -370,6 +373,9 @@ empathy_irc_network_manager_remove (EmpathyIrcNetworkManager *self,
 
   network->user_defined = TRUE;
   network->dropped = TRUE;
+
+  priv->have_to_save = TRUE;
+  reset_save_timeout (self);
 }
 
 static void
