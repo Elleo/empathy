@@ -101,7 +101,7 @@ dispatch_channel_cb (EmpathyDispatcher *dispatcher,
 		empathy_call_window_new (channel);
 	}
 
-  g_free (channel_type);
+	g_free (channel_type);
 }
 
 static void
